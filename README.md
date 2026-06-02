@@ -1,4 +1,4 @@
-# ☕ Brew n Bites — POS System
+# ☕ Brew n Bites 
 ### Aplikasi Kasir Kafe — Qt C++
 
 ---
