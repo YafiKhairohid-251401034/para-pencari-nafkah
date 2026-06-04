@@ -189,7 +189,7 @@ void RegisterPage::setupStyle()
                       .arg(Theme::COLOR_ERROR)    // %13
                       .arg(Theme::BUTTON_RADIUS)  // %14
                       .arg(Theme::ACCENT_HOVER)   // %15
-                  );
+    );
 }
 
 void RegisterPage::onStartOrder()

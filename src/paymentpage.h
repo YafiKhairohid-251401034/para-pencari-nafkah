@@ -58,6 +58,8 @@ private:
     // Numpad
     QFrame *m_numpadFrame;
     QLabel *m_cashEnteredLabel;
+    QWidget *m_numpadWidget;
+    QLabel  *m_qrisImageLabel;
     QString m_cashString;
 
     // Summary
@@ -66,6 +68,12 @@ private:
     QLabel *m_sumChangeValue;
     QLabel *m_changeLabel;
 
+    QLabel *m_sumCashLabel;   // label "Tunai"
+    QLabel *m_sumChangeLabel; // label "Kembalian" (sudah ada m_changeLabel, pakai itu)
+
     QPushButton *m_completeBtn;
     QLabel *m_thankYouLabel;
+
+    QWidget *m_sumCashRow;
+    QWidget *m_sumChangeRow;
 };

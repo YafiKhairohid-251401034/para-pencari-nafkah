@@ -25,10 +25,10 @@ private:
 
     OrderManager *m_mgr;
 
-    QLabel      *m_titleLabel;
-    QLabel      *m_subtitleLabel;
-    QLineEdit   *m_nameEdit;
-    QLineEdit   *m_tableEdit;
-    QLabel      *m_errorLabel;
+    QLabel *m_titleLabel;
+    QLabel *m_subtitleLabel;
+    QLineEdit *m_nameEdit;
+    QLineEdit *m_tableEdit;
+    QLabel *m_errorLabel;
     QPushButton *m_startBtn;
 };
