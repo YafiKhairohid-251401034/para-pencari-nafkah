@@ -11,6 +11,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include "theme.h"
+#include "receiptdialog.h"
 
 PaymentPage::PaymentPage(OrderManager *mgr, QWidget *parent)
     : QWidget(parent)
@@ -434,6 +435,12 @@ void PaymentPage::onCompleteTransaction()
         if (m_sumChangeValue)
             m_sumChangeValue->setText("Nominal kurang!");
         return;
+    }
+
+    if (m_activeMethod == "Tunai") {
+        ReceiptDialog *receipt = new ReceiptDialog(m_mgr, cash, this);
+        receipt->exec();
+        receipt->deleteLater();
     }
 
     if (m_thankYouLabel)

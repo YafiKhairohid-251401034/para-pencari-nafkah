@@ -27,7 +27,9 @@ if(WIN32)
 endif()
 
 # Find Qt6 components
-set(CMAKE_PREFIX_PATH "C:/Qt/6.11.0/mingw_64")
+file(GLOB QT_LOCAL_VERSIONS "C:/Qt/6.*/mingw_64")
+list(SORT QT_LOCAL_VERSIONS ORDER DESCENDING)
+list(GET QT_LOCAL_VERSIONS 0 CMAKE_PREFIX_PATH)
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 # List source files explicitly for reliability and clean builds
