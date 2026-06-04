@@ -39,6 +39,7 @@ set(SRCS
     src/paymentpage.cpp
     src/menuitem.cpp
     src/ordermanager.cpp
+    src/receiptdialog.cpp
 )
 
 set(HEADERS
@@ -49,6 +50,7 @@ set(HEADERS
     src/menuitem.h
     src/ordermanager.h
     src/theme.h
+    src/receiptdialog.h
 )
 
 # Add executable
