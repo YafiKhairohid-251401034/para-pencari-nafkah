@@ -103,7 +103,7 @@ Edit fungsi `allMenuItems()` di **`ordermanager.cpp`**:
 | Order       | Grid menu 4 kolom, filter kategori, search real-time      |
 |             | Panel "Current Order" kanan, tambah/hapus item            |
 |             | Kalkulasi subtotal + PB1 (10%) + total otomatis           |
-| Payment     | Numpad kasir tunai, tab metode (Tunai/QRIS/Kartu)         |
+| Payment     | Numpad kasir tunai, tab metode (Tunai/QRIS)         |
 |             | Kalkulasi kembalian real-time, konfirmasi transaksi        |
 
 ---
