@@ -5,6 +5,7 @@
 #include <QKeyEvent>
 #include <QPropertyAnimation>
 #include <QVBoxLayout>
+#include <QRegularExpression>
 #include "theme.h"
 
 RegisterPage::RegisterPage(OrderManager *mgr, QWidget *parent)
@@ -203,18 +204,41 @@ void RegisterPage::onStartOrder()
 
 bool RegisterPage::validate()
 {
-    if (m_nameEdit->text().trimmed().isEmpty()) {
+    QString name = m_nameEdit->text().trimmed();
+    QString table = m_tableEdit->text().trimmed();
+
+    if (name.isEmpty()) {
         m_errorLabel->setText("Nama pelanggan tidak boleh kosong.");
         m_errorLabel->show();
         m_nameEdit->setFocus();
         return false;
     }
-    if (m_tableEdit->text().trimmed().isEmpty()) {
+
+    // Nama-Huruf&Spasi
+    QRegularExpression nameRegex("^[A-Za-z ]+$");
+    if (!nameRegex.match(name).hasMatch()) {
+        m_errorLabel->setText("Nama hanya boleh berisi huruf.");
+        m_errorLabel->show();
+        m_nameEdit->setFocus();
+        return false;
+    }
+
+    if (table.isEmpty()) {
         m_errorLabel->setText("Nomor meja tidak boleh kosong.");
         m_errorLabel->show();
         m_tableEdit->setFocus();
         return false;
     }
+
+    // Meja-Angka
+    QRegularExpression tableRegex("^[0-9]+$");
+    if (!tableRegex.match(table).hasMatch()) {
+        m_errorLabel->setText("Nomor meja hanya boleh berisi angka.");
+        m_errorLabel->show();
+        m_tableEdit->setFocus();
+        return false;
+    }
+
     m_errorLabel->hide();
     return true;
 }

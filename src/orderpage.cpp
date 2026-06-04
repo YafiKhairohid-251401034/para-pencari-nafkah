@@ -10,7 +10,9 @@
 #include <QScrollBar>
 #include <QStyle>
 #include <QVBoxLayout>
+#include <QCoreApplication>
 #include "theme.h"
+
 
 // =============================================================================
 //  MenuCard — widget kartu produk di grid
@@ -317,14 +319,13 @@ void OrderPage::buildSidebar()
     lay->setSpacing(0);
     lay->setAlignment(Qt::AlignTop);
 
-    // Brand
-    QLabel *brandName = new QLabel("brew n bites");
-    brandName->setObjectName("sidebarBrand");
-    brandName->setAlignment(Qt::AlignCenter);
-    brandName->setWordWrap(true);
-
-    lay->addWidget(brandName);
-    lay->addSpacing(28);
+    // Logo
+    QLabel *logoLabel = new QLabel();
+    QPixmap logoPix(":/images/logobrew.png");
+    logoLabel->setPixmap(logoPix.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    logoLabel->setAlignment(Qt::AlignCenter);
+    lay->addWidget(logoLabel);
+    lay->addSpacing(6);
 
     // Nav buttons
     auto makeNavBtn = [](const QString &text) {
@@ -381,12 +382,12 @@ void OrderPage::buildHeader()
         MenuCategory cat;
     };
     QVector<CatDef> cats = {
-        {"All Items", MenuCategory::All},
-        {"Coffee", MenuCategory::Coffee},
-        {"Non-Coffee", MenuCategory::NonCoffee},
-        {"Cake", MenuCategory::Cake},
-        {"Food", MenuCategory::Food},
-    };
+                            {"All Items", MenuCategory::All},
+                            {"Coffee", MenuCategory::Coffee},
+                            {"Non-Coffee", MenuCategory::NonCoffee},
+                            {"Cake", MenuCategory::Cake},
+                            {"Food", MenuCategory::Food},
+                            };
 
     for (const auto &c : cats) {
         QPushButton *btn = new QPushButton(c.label);
@@ -414,7 +415,7 @@ void OrderPage::buildHeader()
                 continue;
             if (MenuCard *card = qobject_cast<MenuCard *>(it->widget())) {
                 bool match = text.isEmpty() || card->item().name.contains(text, Qt::CaseInsensitive)
-                             || card->item().description.contains(text, Qt::CaseInsensitive);
+                || card->item().description.contains(text, Qt::CaseInsensitive);
                 card->setVisible(match);
             }
         }
@@ -858,7 +859,7 @@ void OrderPage::setupStyle()
                       .arg(Theme::FONT_MONO)      // %16
                       .arg(Theme::BUTTON_RADIUS)  // %17
                       .arg(Theme::ACCENT_HOVER)   // %18
-    );
+                  );
 }
 
 #include "orderpage.moc"
