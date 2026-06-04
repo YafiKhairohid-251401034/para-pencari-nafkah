@@ -1,5 +1,4 @@
 #include "paymentpage.h"
-#include "theme.h"
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
 #include <QGridLayout>
@@ -11,386 +10,399 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QWidget>
+#include "theme.h"
 
 PaymentPage::PaymentPage(OrderManager *mgr, QWidget *parent)
-    : QWidget(parent), m_mgr(mgr), m_activeMethod("Tunai"),
-      m_numpadFrame(nullptr), m_cashEnteredLabel(nullptr),
-      m_sumTotalValue(nullptr), m_sumCashValue(nullptr),
-      m_sumChangeValue(nullptr), m_changeLabel(nullptr), m_completeBtn(nullptr),
-      m_thankYouLabel(nullptr) {
-  setupUi();
-  setupStyle();
+    : QWidget(parent)
+    , m_mgr(mgr)
+    , m_activeMethod("Tunai")
+    , m_numpadFrame(nullptr)
+    , m_cashEnteredLabel(nullptr)
+    , m_sumTotalValue(nullptr)
+    , m_sumCashValue(nullptr)
+    , m_sumChangeValue(nullptr)
+    , m_changeLabel(nullptr)
+    , m_completeBtn(nullptr)
+    , m_thankYouLabel(nullptr)
+{
+    setupUi();
+    setupStyle();
 }
 
-void PaymentPage::refreshPage() {
-  m_cashString.clear();
-  updateCashDisplay();
+void PaymentPage::refreshPage()
+{
+    m_cashString.clear();
+    updateCashDisplay();
 
-  m_totalDueValue->setText(m_mgr->formattedTotal());
-  m_itemsLabel->setText(QString("%1 item").arg(m_mgr->itemCount()));
-  m_nameLabel->setText(m_mgr->customerName());
-  m_tableLabel->setText(QString("Meja %1").arg(m_mgr->tableNumber()));
-  m_sumTotalValue->setText(m_mgr->formattedTotal());
-  m_sumCashValue->setText("Rp 0");
-  m_sumChangeValue->setText("Rp 0");
-  if (m_thankYouLabel)
-    m_thankYouLabel->hide();
-  if (m_completeBtn) {
-    m_completeBtn->setEnabled(true);
-    m_completeBtn->setText("Complete Transaction  ✓");
-  }
+    m_totalDueValue->setText(m_mgr->formattedTotal());
+    m_itemsLabel->setText(QString("%1 item").arg(m_mgr->itemCount()));
+    m_nameLabel->setText(m_mgr->customerName());
+    m_tableLabel->setText(QString("Meja %1").arg(m_mgr->tableNumber()));
+    m_sumTotalValue->setText(m_mgr->formattedTotal());
+    m_sumCashValue->setText("Rp 0");
+    m_sumChangeValue->setText("Rp 0");
+    if (m_thankYouLabel)
+        m_thankYouLabel->hide();
+    if (m_completeBtn) {
+        m_completeBtn->setEnabled(true);
+        m_completeBtn->setText("Complete Transaction  ✓");
+    }
 }
 
-void PaymentPage::setupUi() {
-  QHBoxLayout *mainLayout = new QHBoxLayout(this);
-  mainLayout->setContentsMargins(0, 0, 0, 0);
-  mainLayout->setSpacing(0);
+void PaymentPage::setupUi()
+{
+    QHBoxLayout *mainLayout = new QHBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
 
-  // ── Sidebar ──────────────────────────────────────────────────────────────
-  buildSidebar();
-  mainLayout->addWidget(m_sidebar);
+    // ── Sidebar ──────────────────────────────────────────────────────────────
+    buildSidebar();
+    mainLayout->addWidget(m_sidebar);
 
-  // ── Center (topbar + numpad) ──────────────────────────────────────────
-  QWidget *centerWidget = new QWidget();
-  centerWidget->setObjectName("payMain");
-  QVBoxLayout *centerLay = new QVBoxLayout(centerWidget);
-  centerLay->setContentsMargins(0, 0, 0, 0);
-  centerLay->setSpacing(0);
+    // ── Center (topbar + numpad) ──────────────────────────────────────────
+    QWidget *centerWidget = new QWidget();
+    centerWidget->setObjectName("payMain");
+    QVBoxLayout *centerLay = new QVBoxLayout(centerWidget);
+    centerLay->setContentsMargins(0, 0, 0, 0);
+    centerLay->setSpacing(0);
 
-  // Top bar
-  QFrame *topBar = new QFrame();
-  topBar->setObjectName("payTopBar");
-  topBar->setFixedHeight(72);
-  QHBoxLayout *topLay = new QHBoxLayout(topBar);
-  topLay->setContentsMargins(28, 0, 28, 0);
+    // Top bar
+    QFrame *topBar = new QFrame();
+    topBar->setObjectName("payTopBar");
+    topBar->setFixedHeight(72);
+    QHBoxLayout *topLay = new QHBoxLayout(topBar);
+    topLay->setContentsMargins(28, 0, 28, 0);
 
-  QVBoxLayout *totalDueLay = new QVBoxLayout();
-  QLabel *totalDueStatic = new QLabel("TOTAL DUE");
-  totalDueStatic->setObjectName("totalDueStaticLabel");
-  m_totalDueValue = new QLabel("Rp 0");
-  m_totalDueValue->setObjectName("totalDueBig");
-  totalDueLay->setSpacing(0);
-  totalDueLay->addWidget(totalDueStatic);
-  totalDueLay->addWidget(m_totalDueValue);
+    QVBoxLayout *totalDueLay = new QVBoxLayout();
+    QLabel *totalDueStatic = new QLabel("TOTAL DUE");
+    totalDueStatic->setObjectName("totalDueStaticLabel");
+    m_totalDueValue = new QLabel("Rp 0");
+    m_totalDueValue->setObjectName("totalDueBig");
+    totalDueLay->setSpacing(0);
+    totalDueLay->addWidget(totalDueStatic);
+    totalDueLay->addWidget(m_totalDueValue);
 
-  m_itemsLabel = new QLabel("0 item");
-  m_itemsLabel->setObjectName("payBadge");
-  m_nameLabel = new QLabel("—");
-  m_nameLabel->setObjectName("payBadge");
-  m_tableLabel = new QLabel("Meja —");
-  m_tableLabel->setObjectName("payBadge");
+    m_itemsLabel = new QLabel("0 item");
+    m_itemsLabel->setObjectName("payBadge");
+    m_nameLabel = new QLabel("—");
+    m_nameLabel->setObjectName("payBadge");
+    m_tableLabel = new QLabel("Meja —");
+    m_tableLabel->setObjectName("payBadge");
 
-  topLay->addLayout(totalDueLay);
-  topLay->addStretch();
-  topLay->addWidget(m_itemsLabel);
-  topLay->addSpacing(8);
-  topLay->addWidget(m_nameLabel);
-  topLay->addSpacing(8);
-  topLay->addWidget(m_tableLabel);
+    topLay->addLayout(totalDueLay);
+    topLay->addStretch();
+    topLay->addWidget(m_itemsLabel);
+    topLay->addSpacing(8);
+    topLay->addWidget(m_nameLabel);
+    topLay->addSpacing(8);
+    topLay->addWidget(m_tableLabel);
 
-  centerLay->addWidget(topBar);
+    centerLay->addWidget(topBar);
 
-  // Numpad area
-  QWidget *numpadArea = new QWidget();
-  numpadArea->setObjectName("numpadArea");
-  QVBoxLayout *numpadAreaLay = new QVBoxLayout(numpadArea);
-  numpadAreaLay->setContentsMargins(32, 24, 32, 24);
-  numpadAreaLay->setSpacing(12);
+    // Numpad area
+    QWidget *numpadArea = new QWidget();
+    numpadArea->setObjectName("numpadArea");
+    QVBoxLayout *numpadAreaLay = new QVBoxLayout(numpadArea);
+    numpadAreaLay->setContentsMargins(32, 24, 32, 24);
+    numpadAreaLay->setSpacing(12);
 
-  // Payment method tabs
-  QHBoxLayout *tabsLay = new QHBoxLayout();
-  tabsLay->setSpacing(8);
-  QStringList methods = {"Tunai", "QRIS", "Kartu"};
-  for (const QString &method : methods) {
-    QPushButton *btn = new QPushButton(method);
-    btn->setObjectName(method == "Tunai" ? "methodBtnActive" : "methodBtn");
-    btn->setFixedHeight(34);
-    btn->setMinimumWidth(80);
-    btn->setCursor(Qt::PointingHandCursor);
-    m_methodBtns.append(btn);
-    tabsLay->addWidget(btn);
-    connect(btn, &QPushButton::clicked, [this, method]() {
-      m_activeMethod = method;
-      m_cashString.clear();
-      updateCashDisplay();
-      for (QPushButton *b : m_methodBtns) {
-        b->setObjectName(b->text() == method ? "methodBtnActive" : "methodBtn");
-        b->style()->unpolish(b);
-        b->style()->polish(b);
-      }
-    });
-  }
-  tabsLay->addStretch();
+    // Payment method tabs
+    QHBoxLayout *tabsLay = new QHBoxLayout();
+    tabsLay->setSpacing(8);
+    QStringList methods = {"Tunai", "QRIS"};
+    for (const QString &method : methods) {
+        QPushButton *btn = new QPushButton(method);
+        btn->setObjectName(method == "Tunai" ? "methodBtnActive" : "methodBtn");
+        btn->setFixedHeight(34);
+        btn->setMinimumWidth(80);
+        btn->setCursor(Qt::PointingHandCursor);
+        m_methodBtns.append(btn);
+        tabsLay->addWidget(btn);
+        connect(btn, &QPushButton::clicked, [this, method]() {
+            m_activeMethod = method;
+            m_cashString.clear();
+            updateCashDisplay();
+            for (QPushButton *b : m_methodBtns) {
+                b->setObjectName(b->text() == method ? "methodBtnActive" : "methodBtn");
+                b->style()->unpolish(b);
+                b->style()->polish(b);
+            }
+        });
+    }
+    tabsLay->addStretch();
 
-  // Cash label
-  QLabel *cashSectionLabel = new QLabel("Tunai");
-  cashSectionLabel->setObjectName("cashSectionLabel");
+    // Cash label
+    QLabel *cashSectionLabel = new QLabel("Tunai");
+    cashSectionLabel->setObjectName("cashSectionLabel");
 
-  m_cashEnteredLabel = new QLabel("Rp 0");
-  m_cashEnteredLabel->setObjectName("cashDisplay");
+    m_cashEnteredLabel = new QLabel("Rp 0");
+    m_cashEnteredLabel->setObjectName("cashDisplay");
 
-  // Numpad grid
-  QWidget *gridHost = new QWidget();
-  QGridLayout *gridLay = new QGridLayout(gridHost);
-  gridLay->setSpacing(10);
-  gridLay->setContentsMargins(0, 0, 0, 0);
+    // Numpad grid
+    QWidget *gridHost = new QWidget();
+    QGridLayout *gridLay = new QGridLayout(gridHost);
+    gridLay->setSpacing(10);
+    gridLay->setContentsMargins(0, 0, 0, 0);
 
-  struct KeyDef {
-    QString label;
-    int r;
-    int c;
-  };
-  QVector<KeyDef> keys = {
-      {"1", 0, 0}, {"2", 0, 1},  {"3", 0, 2}, {"4", 1, 0},
-      {"5", 1, 1}, {"6", 1, 2},  {"7", 2, 0}, {"8", 2, 1},
-      {"9", 2, 2}, {"00", 3, 0}, {"0", 3, 1}, {"⌫", 3, 2},
-  };
-  for (const KeyDef &k : keys) {
-    QPushButton *btn = new QPushButton(k.label);
-    btn->setObjectName(k.label == "⌫" ? "numBtnBack" : "numBtn");
-    btn->setMinimumSize(90, 76);
-    btn->setCursor(Qt::PointingHandCursor);
-    gridLay->addWidget(btn, k.r, k.c);
-    QString val = k.label;
-    connect(btn, &QPushButton::clicked,
-            [this, val]() { onNumpadPressed(val); });
-  }
+    struct KeyDef
+    {
+        QString label;
+        int r;
+        int c;
+    };
+    QVector<KeyDef> keys = {
+        {"1", 0, 0},
+        {"2", 0, 1},
+        {"3", 0, 2},
+        {"4", 1, 0},
+        {"5", 1, 1},
+        {"6", 1, 2},
+        {"7", 2, 0},
+        {"8", 2, 1},
+        {"9", 2, 2},
+        {"00", 3, 0},
+        {"0", 3, 1},
+        {"⌫", 3, 2},
+    };
+    for (const KeyDef &k : keys) {
+        QPushButton *btn = new QPushButton(k.label);
+        btn->setObjectName(k.label == "⌫" ? "numBtnBack" : "numBtn");
+        btn->setMinimumSize(90, 76);
+        btn->setCursor(Qt::PointingHandCursor);
+        gridLay->addWidget(btn, k.r, k.c);
+        QString val = k.label;
+        connect(btn, &QPushButton::clicked, [this, val]() { onNumpadPressed(val); });
+    }
 
-  numpadAreaLay->addLayout(tabsLay);
-  numpadAreaLay->addWidget(cashSectionLabel);
-  numpadAreaLay->addWidget(m_cashEnteredLabel);
-  numpadAreaLay->addWidget(gridHost);
-  numpadAreaLay->addStretch();
+    numpadAreaLay->addLayout(tabsLay);
+    numpadAreaLay->addWidget(cashSectionLabel);
+    numpadAreaLay->addWidget(m_cashEnteredLabel);
+    numpadAreaLay->addWidget(gridHost);
+    numpadAreaLay->addStretch();
 
-  centerLay->addWidget(numpadArea, 1);
-  mainLayout->addWidget(centerWidget, 1);
+    centerLay->addWidget(numpadArea, 1);
+    mainLayout->addWidget(centerWidget, 1);
 
-  // ── Summary panel ────────────────────────────────────────────────────────
-  QFrame *summaryPanel = new QFrame();
-  summaryPanel->setObjectName("summaryPanel");
-  summaryPanel->setFixedWidth(260);
-  QVBoxLayout *sumLay = new QVBoxLayout(summaryPanel);
-  sumLay->setContentsMargins(20, 28, 20, 20);
-  sumLay->setSpacing(0);
+    // ── Summary panel ────────────────────────────────────────────────────────
+    QFrame *summaryPanel = new QFrame();
+    summaryPanel->setObjectName("summaryPanel");
+    summaryPanel->setFixedWidth(260);
+    QVBoxLayout *sumLay = new QVBoxLayout(summaryPanel);
+    sumLay->setContentsMargins(20, 28, 20, 20);
+    sumLay->setSpacing(0);
 
-  QLabel *sumTitle = new QLabel("Ringkasan");
-  sumTitle->setObjectName("sumPanelTitle");
-  sumLay->addWidget(sumTitle);
-  sumLay->addSpacing(20);
+    QLabel *sumTitle = new QLabel("Ringkasan");
+    sumTitle->setObjectName("sumPanelTitle");
+    sumLay->addWidget(sumTitle);
+    sumLay->addSpacing(20);
 
-  auto addRow = [&](const QString &text, QLabel *&valOut,
-                    const QString &valId) {
-    QHBoxLayout *row = new QHBoxLayout();
-    QLabel *lbl = new QLabel(text);
-    lbl->setObjectName("sumRowLbl");
-    valOut = new QLabel("Rp 0");
-    valOut->setObjectName(valId);
-    row->addWidget(lbl);
-    row->addStretch();
-    row->addWidget(valOut);
-    sumLay->addLayout(row);
+    auto addRow = [&](const QString &text, QLabel *&valOut, const QString &valId) {
+        QHBoxLayout *row = new QHBoxLayout();
+        QLabel *lbl = new QLabel(text);
+        lbl->setObjectName("sumRowLbl");
+        valOut = new QLabel("Rp 0");
+        valOut->setObjectName(valId);
+        row->addWidget(lbl);
+        row->addStretch();
+        row->addWidget(valOut);
+        sumLay->addLayout(row);
+        sumLay->addSpacing(8);
+    };
+
+    addRow("Total", m_sumTotalValue, "sumRowVal");
+    addRow("Tunai", m_sumCashValue, "sumRowVal");
+
+    QFrame *div = new QFrame();
+    div->setObjectName("divider");
+    div->setFixedHeight(1);
+    sumLay->addWidget(div);
     sumLay->addSpacing(8);
-  };
 
-  addRow("Total", m_sumTotalValue, "sumRowVal");
-  addRow("Tunai", m_sumCashValue, "sumRowVal");
+    // Kembalian row
+    m_changeLabel = new QLabel("Kembalian");
+    m_changeLabel->setObjectName("sumChangeLabel");
+    m_sumChangeValue = new QLabel("Rp 0");
+    m_sumChangeValue->setObjectName("sumChangeValue");
+    QHBoxLayout *changeRow = new QHBoxLayout();
+    changeRow->addWidget(m_changeLabel);
+    changeRow->addStretch();
+    changeRow->addWidget(m_sumChangeValue);
+    sumLay->addLayout(changeRow);
+    sumLay->addSpacing(20);
 
-  QFrame *div = new QFrame();
-  div->setObjectName("divider");
-  div->setFixedHeight(1);
-  sumLay->addWidget(div);
-  sumLay->addSpacing(8);
+    m_thankYouLabel = new QLabel("Terimakasih!");
+    m_thankYouLabel->setObjectName("thankYou");
+    m_thankYouLabel->setAlignment(Qt::AlignCenter);
+    m_thankYouLabel->hide();
+    sumLay->addWidget(m_thankYouLabel);
 
-  // Kembalian row
-  m_changeLabel = new QLabel("Kembalian");
-  m_changeLabel->setObjectName("sumChangeLabel");
-  m_sumChangeValue = new QLabel("Rp 0");
-  m_sumChangeValue->setObjectName("sumChangeValue");
-  QHBoxLayout *changeRow = new QHBoxLayout();
-  changeRow->addWidget(m_changeLabel);
-  changeRow->addStretch();
-  changeRow->addWidget(m_sumChangeValue);
-  sumLay->addLayout(changeRow);
-  sumLay->addSpacing(20);
+    sumLay->addStretch();
 
-  m_thankYouLabel = new QLabel("✓  Terimakasih!");
-  m_thankYouLabel->setObjectName("thankYou");
-  m_thankYouLabel->setAlignment(Qt::AlignCenter);
-  m_thankYouLabel->hide();
-  sumLay->addWidget(m_thankYouLabel);
+    m_completeBtn = new QPushButton("Complete Transaction ");
+    m_completeBtn->setObjectName("completeBtn");
+    m_completeBtn->setMinimumHeight(50);
+    m_completeBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_completeBtn, &QPushButton::clicked, this, &PaymentPage::onCompleteTransaction);
+    sumLay->addWidget(m_completeBtn);
 
-  sumLay->addStretch();
-
-  m_completeBtn = new QPushButton("Complete Transaction  ✓");
-  m_completeBtn->setObjectName("completeBtn");
-  m_completeBtn->setMinimumHeight(50);
-  m_completeBtn->setCursor(Qt::PointingHandCursor);
-  connect(m_completeBtn, &QPushButton::clicked, this,
-          &PaymentPage::onCompleteTransaction);
-  sumLay->addWidget(m_completeBtn);
-
-  mainLayout->addWidget(summaryPanel);
+    mainLayout->addWidget(summaryPanel);
 }
 
-void PaymentPage::buildSidebar() {
-  m_sidebar = new QFrame();
-  m_sidebar->setObjectName("sidebar");
-  m_sidebar->setFixedWidth(Theme::SIDEBAR_WIDTH);
+void PaymentPage::buildSidebar()
+{
+    m_sidebar = new QFrame();
+    m_sidebar->setObjectName("sidebar");
+    m_sidebar->setFixedWidth(Theme::SIDEBAR_WIDTH);
 
-  QVBoxLayout *lay = new QVBoxLayout(m_sidebar);
-  lay->setContentsMargins(0, 20, 0, 20);
-  lay->setSpacing(0);
-  lay->setAlignment(Qt::AlignTop);
+    QVBoxLayout *lay = new QVBoxLayout(m_sidebar);
+    lay->setContentsMargins(0, 20, 0, 20);
+    lay->setSpacing(0);
+    lay->setAlignment(Qt::AlignTop);
 
-  QLabel *icon = new QLabel("☕");
-  icon->setObjectName("sidebarIcon");
-  icon->setAlignment(Qt::AlignCenter);
-  icon->setFixedHeight(36);
+    QLabel *brand = new QLabel("brew n bites");
+    brand->setObjectName("sidebarBrand");
+    brand->setAlignment(Qt::AlignCenter);
+    brand->setWordWrap(true);
 
-  QLabel *brand = new QLabel("brew n bites");
-  brand->setObjectName("sidebarBrand");
-  brand->setAlignment(Qt::AlignCenter);
-  brand->setWordWrap(true);
+    lay->addWidget(brand);
+    lay->addSpacing(28);
 
-  lay->addWidget(icon);
-  lay->addWidget(brand);
-  lay->addSpacing(28);
+    auto makeNavBtn = [](const QString &text) -> QPushButton * {
+        QPushButton *btn = new QPushButton(text);
+        btn->setObjectName("navBtn");
+        btn->setFixedHeight(36);
+        btn->setCursor(Qt::PointingHandCursor);
+        return btn;
+    };
 
-  auto makeNavBtn = [](const QString &text) -> QPushButton * {
-    QPushButton *btn = new QPushButton(text);
-    btn->setObjectName("navBtn");
-    btn->setFixedHeight(36);
-    btn->setCursor(Qt::PointingHandCursor);
-    return btn;
-  };
+    m_navRegister = makeNavBtn("Register");
+    m_navOrder = makeNavBtn("Order");
+    m_navPayment = makeNavBtn("Payment");
+    m_navPayment->setObjectName("navBtnActive");
 
-  m_navRegister = makeNavBtn("Register");
-  m_navOrder = makeNavBtn("Order");
-  m_navPayment = makeNavBtn("Payment");
-  m_navPayment->setObjectName("navBtnActive");
+    lay->addWidget(m_navRegister);
+    lay->addSpacing(4);
+    lay->addWidget(m_navOrder);
+    lay->addSpacing(4);
+    lay->addWidget(m_navPayment);
+    lay->addStretch();
 
-  lay->addWidget(m_navRegister);
-  lay->addSpacing(4);
-  lay->addWidget(m_navOrder);
-  lay->addSpacing(4);
-  lay->addWidget(m_navPayment);
-  lay->addStretch();
-
-  connect(m_navRegister, &QPushButton::clicked, this,
-          &PaymentPage::transactionComplete);
-  connect(m_navOrder, &QPushButton::clicked, this,
-          &PaymentPage::navigateToOrder);
+    connect(m_navRegister, &QPushButton::clicked, this, &PaymentPage::transactionComplete);
+    connect(m_navOrder, &QPushButton::clicked, this, &PaymentPage::navigateToOrder);
 }
 
 void PaymentPage::buildNumpad() {}
 void PaymentPage::buildSummaryPanel() {}
 
-void PaymentPage::updateCashDisplay() {
-  if (!m_cashEnteredLabel)
-    return;
-  if (m_cashString.isEmpty()) {
-    m_cashEnteredLabel->setText("Rp 0");
-  } else {
-    bool ok;
-    long long val = m_cashString.toLongLong(&ok);
-    if (ok) {
-      QString p = QString::number(val);
-      int pos = p.length() - 3;
-      while (pos > 0) {
-        p.insert(pos, '.');
-        pos -= 3;
-      }
-      m_cashEnteredLabel->setText("Rp " + p);
+void PaymentPage::updateCashDisplay()
+{
+    if (!m_cashEnteredLabel)
+        return;
+    if (m_cashString.isEmpty()) {
+        m_cashEnteredLabel->setText("Rp 0");
+    } else {
+        bool ok;
+        long long val = m_cashString.toLongLong(&ok);
+        if (ok) {
+            QString p = QString::number(val);
+            int pos = p.length() - 3;
+            while (pos > 0) {
+                p.insert(pos, '.');
+                pos -= 3;
+            }
+            m_cashEnteredLabel->setText("Rp " + p);
+        }
     }
-  }
-  updateChange();
+    updateChange();
 }
 
-void PaymentPage::updateChange() {
-  if (!m_sumCashValue || !m_sumChangeValue)
-    return;
+void PaymentPage::updateChange()
+{
+    if (!m_sumCashValue || !m_sumChangeValue)
+        return;
 
-  long long cash = m_cashString.isEmpty() ? 0LL : m_cashString.toLongLong();
-  long long total = static_cast<long long>(m_mgr->total());
-  long long change = cash - total;
+    long long cash = m_cashString.isEmpty() ? 0LL : m_cashString.toLongLong();
+    long long total = static_cast<long long>(m_mgr->total());
+    long long change = cash - total;
 
-  if (cash > 0) {
-    QString p = QString::number(cash);
-    int pos = p.length() - 3;
-    while (pos > 0) {
-      p.insert(pos, '.');
-      pos -= 3;
+    if (cash > 0) {
+        QString p = QString::number(cash);
+        int pos = p.length() - 3;
+        while (pos > 0) {
+            p.insert(pos, '.');
+            pos -= 3;
+        }
+        m_sumCashValue->setText("Rp " + p);
+    } else {
+        m_sumCashValue->setText("Rp 0");
     }
-    m_sumCashValue->setText("Rp " + p);
-  } else {
-    m_sumCashValue->setText("Rp 0");
-  }
 
-  if (change >= 0) {
-    QString p = QString::number(change);
-    int pos = p.length() - 3;
-    while (pos > 0) {
-      p.insert(pos, '.');
-      pos -= 3;
+    if (change >= 0) {
+        QString p = QString::number(change);
+        int pos = p.length() - 3;
+        while (pos > 0) {
+            p.insert(pos, '.');
+            pos -= 3;
+        }
+        m_sumChangeValue->setText("Rp " + p);
+        m_sumChangeValue->setStyleSheet(
+            QString("color: %1; font-weight: bold; font-family: '%2'; font-size: 13px;")
+                .arg(Theme::ACCENT_PRIMARY)
+                .arg(Theme::FONT_MONO));
+    } else {
+        m_sumChangeValue->setText("Kurang");
+        m_sumChangeValue->setStyleSheet(QString("color: %1; font-family: '%2'; font-size: 13px;")
+                                            .arg(Theme::COLOR_ERROR)
+                                            .arg(Theme::FONT_MONO));
     }
-    m_sumChangeValue->setText("Rp " + p);
-    m_sumChangeValue->setStyleSheet(
-        QString(
-            "color: %1; font-weight: bold; font-family: '%2'; font-size: 13px;")
-            .arg(Theme::ACCENT_PRIMARY)
-            .arg(Theme::FONT_MONO));
-  } else {
-    m_sumChangeValue->setText("Kurang");
-    m_sumChangeValue->setStyleSheet(
-        QString("color: %1; font-family: '%2'; font-size: 13px;")
-            .arg(Theme::COLOR_ERROR)
-            .arg(Theme::FONT_MONO));
-  }
 }
 
-void PaymentPage::onNumpadPressed(const QString &val) {
-  if (val == "⌫") {
-    if (!m_cashString.isEmpty())
-      m_cashString.chop(1);
-  } else if (val == "00") {
-    if (!m_cashString.isEmpty())
-      m_cashString += "00";
-  } else {
-    if (m_cashString.length() < 12)
-      m_cashString += val;
-  }
-  updateCashDisplay();
+void PaymentPage::onNumpadPressed(const QString &val)
+{
+    if (val == "⌫") {
+        if (!m_cashString.isEmpty())
+            m_cashString.chop(1);
+    } else if (val == "00") {
+        if (!m_cashString.isEmpty())
+            m_cashString += "00";
+    } else {
+        if (m_cashString.length() < 12)
+            m_cashString += val;
+    }
+    updateCashDisplay();
 }
 
-void PaymentPage::onCompleteTransaction() {
-  long long cash = m_cashString.isEmpty() ? 0LL : m_cashString.toLongLong();
-  long long total = static_cast<long long>(m_mgr->total());
+void PaymentPage::onCompleteTransaction()
+{
+    long long cash = m_cashString.isEmpty() ? 0LL : m_cashString.toLongLong();
+    long long total = static_cast<long long>(m_mgr->total());
 
-  if (cash < total && m_activeMethod == "Tunai") {
-    if (m_sumChangeValue)
-      m_sumChangeValue->setText("Nominal kurang!");
-    return;
-  }
+    if (cash < total && m_activeMethod == "Tunai") {
+        if (m_sumChangeValue)
+            m_sumChangeValue->setText("Nominal kurang!");
+        return;
+    }
 
-  if (m_thankYouLabel)
-    m_thankYouLabel->show();
-  if (m_completeBtn) {
-    m_completeBtn->setEnabled(false);
-    m_completeBtn->setText("✓  Transaksi Selesai");
-  }
+    if (m_thankYouLabel)
+        m_thankYouLabel->show();
+    if (m_completeBtn) {
+        m_completeBtn->setEnabled(false);
+        m_completeBtn->setText("✓  Transaksi Selesai");
+    }
 
-  QTimer *t = new QTimer(this);
-  t->setSingleShot(true);
-  connect(t, &QTimer::timeout, [this, t]() {
-    t->deleteLater();
-    m_mgr->clearCart();
-    emit transactionComplete();
-  });
-  t->start(1800);
+    QTimer *t = new QTimer(this);
+    t->setSingleShot(true);
+    connect(t, &QTimer::timeout, [this, t]() {
+        t->deleteLater();
+        m_mgr->clearCart();
+        emit transactionComplete();
+    });
+    t->start(1800);
 }
 
-void PaymentPage::setupStyle() {
-  setStyleSheet(QString(R"(
+void PaymentPage::setupStyle()
+{
+    setStyleSheet(QString(R"(
         PaymentPage, #payMain, #numpadArea {
             background-color: %1;
         }
@@ -540,22 +552,22 @@ void PaymentPage::setupStyle() {
         #completeBtn:hover { background-color: %16; }
         #completeBtn:disabled { background-color: %17; }
     )")
-                    .arg(Theme::BG_APP)          // %1
-                    .arg(Theme::BG_SIDEBAR)      // %2
-                    .arg(Theme::BORDER_LIGHT)    // %3
-                    .arg(Theme::FONT_DISPLAY)    // %4
-                    .arg(Theme::TEXT_SECONDARY)  // %5
-                    .arg(Theme::FONT_BODY)       // %6
-                    .arg(Theme::ACCENT_LIGHT)    // %7
-                    .arg(Theme::ACCENT_PRIMARY)  // %8
-                    .arg(Theme::TEXT_PRIMARY)    // %9
-                    .arg(Theme::BG_NUMPAD_KEY)   // %10
-                    .arg(Theme::BG_NUMPAD_HOVER) // %11
-                    .arg(Theme::FONT_BODY)       // %12 (placeholder, mono)
-                    .arg(Theme::BG_BADGE)        // %13
-                    .arg(Theme::FONT_HEADING)    // %14
-                    .arg(Theme::BUTTON_RADIUS)   // %15
-                    .arg(Theme::ACCENT_HOVER)    // %16
-                    .arg(Theme::TEXT_MUTED)      // %17
-  );
+                      .arg(Theme::BG_APP)          // %1
+                      .arg(Theme::BG_SIDEBAR)      // %2
+                      .arg(Theme::BORDER_LIGHT)    // %3
+                      .arg(Theme::FONT_DISPLAY)    // %4
+                      .arg(Theme::TEXT_SECONDARY)  // %5
+                      .arg(Theme::FONT_BODY)       // %6
+                      .arg(Theme::ACCENT_LIGHT)    // %7
+                      .arg(Theme::ACCENT_PRIMARY)  // %8
+                      .arg(Theme::TEXT_PRIMARY)    // %9
+                      .arg(Theme::BG_NUMPAD_KEY)   // %10
+                      .arg(Theme::BG_NUMPAD_HOVER) // %11
+                      .arg(Theme::FONT_BODY)       // %12 (placeholder, mono)
+                      .arg(Theme::BG_BADGE)        // %13
+                      .arg(Theme::FONT_HEADING)    // %14
+                      .arg(Theme::BUTTON_RADIUS)   // %15
+                      .arg(Theme::ACCENT_HOVER)    // %16
+                      .arg(Theme::TEXT_MUTED)      // %17
+    );
 }

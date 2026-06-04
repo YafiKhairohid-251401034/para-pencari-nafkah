@@ -3,7 +3,7 @@
 #include "mainwindow.h"
 #include "theme.h"
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
@@ -18,8 +18,11 @@ int main(int argc, char* argv[])
 
     // Global application style — smooth scrolling, no focus rect
     app.setStyleSheet(R"(
+    QWidget {
+        background-color: #FAF8F5;
+        }
         * {
-            outline: none;
+        outline: none;
         }
         QScrollArea {
             border: none;

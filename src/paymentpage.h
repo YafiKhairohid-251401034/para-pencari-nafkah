@@ -1,20 +1,21 @@
 #pragma once
-#include <QWidget>
+#include <QFrame>
 #include <QLabel>
 #include <QPushButton>
-#include <QFrame>
 #include <QVector>
+#include <QWidget>
 #include "ordermanager.h"
 
 // =============================================================================
 //  PaymentPage — Layar kasir: numpad tunai + ringkasan
 // =============================================================================
 
-class PaymentPage : public QWidget {
+class PaymentPage : public QWidget
+{
     Q_OBJECT
 
 public:
-    explicit PaymentPage(OrderManager* mgr, QWidget* parent = nullptr);
+    explicit PaymentPage(OrderManager *mgr, QWidget *parent = nullptr);
 
     void refreshPage();
 
@@ -23,7 +24,7 @@ signals:
     void transactionComplete();
 
 private slots:
-    void onNumpadPressed(const QString& val);
+    void onNumpadPressed(const QString &val);
     void onCompleteTransaction();
 
 private:
@@ -35,36 +36,36 @@ private:
     void updateCashDisplay();
     void updateChange();
 
-    OrderManager*       m_mgr;
+    OrderManager *m_mgr;
 
     // Sidebar
-    QFrame*             m_sidebar;
-    QPushButton*        m_navRegister;
-    QPushButton*        m_navOrder;
-    QPushButton*        m_navPayment;
+    QFrame *m_sidebar;
+    QPushButton *m_navRegister;
+    QPushButton *m_navOrder;
+    QPushButton *m_navPayment;
 
     // Header info
-    QLabel*             m_totalDueLabel;
-    QLabel*             m_totalDueValue;
-    QLabel*             m_itemsLabel;
-    QLabel*             m_nameLabel;
-    QLabel*             m_tableLabel;
+    QLabel *m_totalDueLabel;
+    QLabel *m_totalDueValue;
+    QLabel *m_itemsLabel;
+    QLabel *m_nameLabel;
+    QLabel *m_tableLabel;
 
-    // Payment tabs (Tunai / QRIS / Kartu)
-    QVector<QPushButton*> m_methodBtns;
-    QString             m_activeMethod;
+    // Payment tabs (Tunai / QRIS)
+    QVector<QPushButton *> m_methodBtns;
+    QString m_activeMethod;
 
     // Numpad
-    QFrame*             m_numpadFrame;
-    QLabel*             m_cashEnteredLabel;
-    QString             m_cashString;
+    QFrame *m_numpadFrame;
+    QLabel *m_cashEnteredLabel;
+    QString m_cashString;
 
     // Summary
-    QLabel*             m_sumTotalValue;
-    QLabel*             m_sumCashValue;
-    QLabel*             m_sumChangeValue;
-    QLabel*             m_changeLabel;
+    QLabel *m_sumTotalValue;
+    QLabel *m_sumCashValue;
+    QLabel *m_sumChangeValue;
+    QLabel *m_changeLabel;
 
-    QPushButton*        m_completeBtn;
-    QLabel*             m_thankYouLabel;
+    QPushButton *m_completeBtn;
+    QLabel *m_thankYouLabel;
 };

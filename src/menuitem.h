@@ -5,25 +5,21 @@
 //  MenuItem — Model data untuk satu produk menu
 // =============================================================================
 
-enum class MenuCategory {
-    All,
-    Coffee,
-    NonCoffee,
-    Cake,
-    Food
-};
+enum class MenuCategory { All, Coffee, NonCoffee, Cake, Food };
 
-struct MenuItem {
-    int         id;
-    QString     name;
-    QString     description;
-    int         price;          // dalam Rupiah
+struct MenuItem
+{
+    int id;
+    QString name;
+    QString description;
+    int price; // dalam Rupiah
     MenuCategory category;
-    QString     emoji;          // emoji representasi produk (fallback gambar)
-    QString     colorAccent;    // warna aksen kartu produk
+    QString emoji;       // emoji representasi produk (fallback gambar)
+    QString colorAccent; // warna aksen kartu produk
 
     // Helper: format harga ke "Rp XX.XXX"
-    QString formattedPrice() const {
+    QString formattedPrice() const
+    {
         QString p = QString::number(price);
         // Insert dots every 3 digits from right
         int insertPos = p.length() - 3;
@@ -34,13 +30,19 @@ struct MenuItem {
         return "Rp " + p;
     }
 
-    QString categoryString() const {
+    QString categoryString() const
+    {
         switch (category) {
-            case MenuCategory::Coffee:    return "Coffee";
-            case MenuCategory::NonCoffee: return "Non-Coffee";
-            case MenuCategory::Cake:      return "Cake";
-            case MenuCategory::Food:      return "Food";
-            default:                      return "All";
+        case MenuCategory::Coffee:
+            return "Coffee";
+        case MenuCategory::NonCoffee:
+            return "Non-Coffee";
+        case MenuCategory::Cake:
+            return "Cake";
+        case MenuCategory::Food:
+            return "Food";
+        default:
+            return "All";
         }
     }
 };

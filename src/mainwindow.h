@@ -2,19 +2,20 @@
 #include <QMainWindow>
 #include <QStackedWidget>
 #include "ordermanager.h"
-#include "registerpage.h"
 #include "orderpage.h"
 #include "paymentpage.h"
+#include "registerpage.h"
 
 // =============================================================================
 //  MainWindow — Kontainer utama dengan QStackedWidget untuk navigasi antar layar
 // =============================================================================
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow
+{
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget* parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
 private slots:
@@ -26,10 +27,10 @@ private slots:
 private:
     void setupUi();
 
-    QStackedWidget* m_stack;
-    OrderManager*   m_orderMgr;
+    QStackedWidget *m_stack;
+    OrderManager *m_orderMgr;
 
-    RegisterPage*   m_registerPage;
-    OrderPage*      m_orderPage;
-    PaymentPage*    m_paymentPage;
+    RegisterPage *m_registerPage;
+    OrderPage *m_orderPage;
+    PaymentPage *m_paymentPage;
 };
