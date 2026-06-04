@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Enable automatic compilation of Qt Meta-Object System (MOC)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 
 # ---------------------------------------------------------------------------
 # Qt6 Path configuration (Windows / MinGW Cross-compilation)
@@ -51,7 +52,7 @@ set(HEADERS
 )
 
 # Add executable
-add_executable(${PROJECT_NAME} ${SRCS} ${HEADERS})
+add_executable(${PROJECT_NAME} ${SRCS} ${HEADERS} src/resource.qrc)
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets)

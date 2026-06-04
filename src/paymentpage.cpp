@@ -34,6 +34,17 @@ void PaymentPage::refreshPage()
     m_cashString.clear();
     updateCashDisplay();
 
+    m_activeMethod = "Tunai";
+    m_numpadWidget->setVisible(true);
+    m_qrisImageLabel->setVisible(false);
+    m_sumCashRow->setVisible(true);
+    m_sumChangeRow->setVisible(true);
+    for (QPushButton *b : m_methodBtns) {
+        b->setObjectName(b->text() == "Tunai" ? "methodBtnActive" : "methodBtn");
+        b->style()->unpolish(b);
+        b->style()->polish(b);
+    }
+
     m_totalDueValue->setText(m_mgr->formattedTotal());
     m_itemsLabel->setText(QString("%1 item").arg(m_mgr->itemCount()));
     m_nameLabel->setText(m_mgr->customerName());
@@ -127,9 +138,33 @@ void PaymentPage::setupUi()
                 b->style()->unpolish(b);
                 b->style()->polish(b);
             }
+            m_numpadWidget->setVisible(method == "Tunai");
+            m_qrisImageLabel->setVisible(method == "QRIS");
+            m_sumCashRow->setVisible(method == "Tunai");
+            m_sumChangeRow->setVisible(method == "Tunai");
         });
     }
     tabsLay->addStretch();
+
+    // Widget pembungkus numpad
+    m_numpadWidget = new QWidget();
+    QVBoxLayout *numpadInnerLay = new QVBoxLayout(m_numpadWidget);
+    numpadInnerLay->setContentsMargins(0, 0, 0, 0);
+    numpadInnerLay->setSpacing(12);
+
+    // Widget gambar QRIS
+    m_qrisImageLabel = new QLabel();
+    QPixmap qrisPixmap(":/images/qr_brewnbites.png");
+    if (qrisPixmap.isNull()) {
+        m_qrisImageLabel->setText("❌ Gambar tidak ditemukan");
+        m_qrisImageLabel->setStyleSheet("color: red; font-size: 14px;");
+    } else {
+        m_qrisImageLabel->setPixmap(
+            qrisPixmap.scaled(280, 280, Qt::KeepAspectRatio, Qt::SmoothTransformation)
+            );
+    }
+    m_qrisImageLabel->setAlignment(Qt::AlignCenter);
+    m_qrisImageLabel->hide();
 
     // Cash label
     QLabel *cashSectionLabel = new QLabel("Tunai");
@@ -174,10 +209,13 @@ void PaymentPage::setupUi()
         connect(btn, &QPushButton::clicked, [this, val]() { onNumpadPressed(val); });
     }
 
+    numpadInnerLay->addWidget(cashSectionLabel);
+    numpadInnerLay->addWidget(m_cashEnteredLabel);
+    numpadInnerLay->addWidget(gridHost);
+
     numpadAreaLay->addLayout(tabsLay);
-    numpadAreaLay->addWidget(cashSectionLabel);
-    numpadAreaLay->addWidget(m_cashEnteredLabel);
-    numpadAreaLay->addWidget(gridHost);
+    numpadAreaLay->addWidget(m_numpadWidget);
+    numpadAreaLay->addWidget(m_qrisImageLabel);
     numpadAreaLay->addStretch();
 
     centerLay->addWidget(numpadArea, 1);
@@ -210,7 +248,20 @@ void PaymentPage::setupUi()
     };
 
     addRow("Total", m_sumTotalValue, "sumRowVal");
-    addRow("Tunai", m_sumCashValue, "sumRowVal");
+
+    // Row Tunai — simpan sebagai widget agar bisa hide/show
+    m_sumCashRow = new QWidget();
+    QHBoxLayout *cashRowLay = new QHBoxLayout(m_sumCashRow);
+    cashRowLay->setContentsMargins(0, 0, 0, 0);
+    QLabel *cashLbl = new QLabel("Tunai");
+    cashLbl->setObjectName("sumRowLbl");
+    m_sumCashValue = new QLabel("Rp 0");
+    m_sumCashValue->setObjectName("sumRowVal");
+    cashRowLay->addWidget(cashLbl);
+    cashRowLay->addStretch();
+    cashRowLay->addWidget(m_sumCashValue);
+    sumLay->addWidget(m_sumCashRow);
+    sumLay->addSpacing(8);
 
     QFrame *div = new QFrame();
     div->setObjectName("divider");
@@ -219,15 +270,17 @@ void PaymentPage::setupUi()
     sumLay->addSpacing(8);
 
     // Kembalian row
+    m_sumChangeRow = new QWidget();
+    QHBoxLayout *changeRow = new QHBoxLayout(m_sumChangeRow);
+    changeRow->setContentsMargins(0, 0, 0, 0);
     m_changeLabel = new QLabel("Kembalian");
     m_changeLabel->setObjectName("sumChangeLabel");
     m_sumChangeValue = new QLabel("Rp 0");
     m_sumChangeValue->setObjectName("sumChangeValue");
-    QHBoxLayout *changeRow = new QHBoxLayout();
     changeRow->addWidget(m_changeLabel);
     changeRow->addStretch();
     changeRow->addWidget(m_sumChangeValue);
-    sumLay->addLayout(changeRow);
+    sumLay->addWidget(m_sumChangeRow);
     sumLay->addSpacing(20);
 
     m_thankYouLabel = new QLabel("Terimakasih!");
