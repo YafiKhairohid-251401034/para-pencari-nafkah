@@ -60,9 +60,14 @@ ReceiptDialog::ReceiptDialog(OrderManager *mgr, long long cashPaid, QWidget *par
     addSep();
 
     // Info pelanggan
-    addLabel("Pelanggan : " + mgr->customerName(), false, Qt::AlignLeft);
-    addLabel("Meja      : " + mgr->tableNumber(),  false, Qt::AlignLeft);
-    addLabel("Metode    : Tunai",                   false, Qt::AlignLeft);
+    QLabel *l1 = new QLabel(QString("Pelanggan : %1").arg(mgr->customerName()));
+    QLabel *l2 = new QLabel(QString("Meja      : %1").arg(mgr->tableNumber()));
+    QLabel *l3 = new QLabel("Metode    : Tunai");
+    QFont mono("Courier New", 9);
+    l1->setFont(mono); l2->setFont(mono); l3->setFont(mono);
+    lay->addWidget(l1);
+    lay->addWidget(l2);
+    lay->addWidget(l3);
     addSep();
 
     // Item pesanan
