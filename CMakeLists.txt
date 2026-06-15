@@ -27,7 +27,7 @@ if(WIN32)
 endif()
 
 # Find Qt6 components
-set(CMAKE_PREFIX_PATH "C:/Qt/6.11.0/mingw_64")
+set(CMAKE_PREFIX_PATH "C:/Qt/6.11.1/mingw_64")
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 # List source files explicitly for reliability and clean builds
@@ -40,6 +40,8 @@ set(SRCS
     src/menuitem.cpp
     src/ordermanager.cpp
     src/receiptdialog.cpp
+    src/historymanager.cpp
+    src/historypage.cpp
 )
 
 set(HEADERS
@@ -51,6 +53,8 @@ set(HEADERS
     src/ordermanager.h
     src/theme.h
     src/receiptdialog.h
+    src/historymanager.h
+    src/historypage.h
 )
 
 # Add executable

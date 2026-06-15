@@ -332,6 +332,7 @@ void PaymentPage::buildSidebar()
     m_navRegister = makeNavBtn("Register");
     m_navOrder = makeNavBtn("Order");
     m_navPayment = makeNavBtn("Payment");
+    m_navHistory = makeNavBtn("History");
     m_navPayment->setObjectName("navBtnActive");
 
     lay->addWidget(m_navRegister);
@@ -339,10 +340,13 @@ void PaymentPage::buildSidebar()
     lay->addWidget(m_navOrder);
     lay->addSpacing(4);
     lay->addWidget(m_navPayment);
+    lay->addSpacing(4);
+    lay->addWidget(m_navHistory);
     lay->addStretch();
 
     connect(m_navRegister, &QPushButton::clicked, this, &PaymentPage::transactionComplete);
     connect(m_navOrder, &QPushButton::clicked, this, &PaymentPage::navigateToOrder);
+    connect(m_navHistory, &QPushButton::clicked, this, &PaymentPage::navigateToHistory);
 }
 
 void PaymentPage::buildNumpad() {}
@@ -441,6 +445,11 @@ void PaymentPage::onCompleteTransaction()
         ReceiptDialog *receipt = new ReceiptDialog(m_mgr, cash, this);
         receipt->exec();
         receipt->deleteLater();
+    }
+
+    // Simpan ke riwayat transaksi (persisten) sebelum cart dibersihkan
+    if (m_historyMgr) {
+        m_historyMgr->saveTransaction(m_mgr, m_activeMethod, m_activeMethod == "Tunai" ? cash : 0);
     }
 
     if (m_thankYouLabel)

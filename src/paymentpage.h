@@ -4,6 +4,7 @@
 #include <QPushButton>
 #include <QVector>
 #include <QWidget>
+#include "historymanager.h"
 #include "ordermanager.h"
 
 // =============================================================================
@@ -18,9 +19,11 @@ public:
     explicit PaymentPage(OrderManager *mgr, QWidget *parent = nullptr);
 
     void refreshPage();
+    void setHistoryManager(HistoryManager *historyMgr) { m_historyMgr = historyMgr; }
 
 signals:
     void navigateToOrder();
+    void navigateToHistory();
     void transactionComplete();
 
 private slots:
@@ -37,12 +40,14 @@ private:
     void updateChange();
 
     OrderManager *m_mgr;
+    HistoryManager *m_historyMgr = nullptr;
 
     // Sidebar
     QFrame *m_sidebar;
     QPushButton *m_navRegister;
     QPushButton *m_navOrder;
     QPushButton *m_navPayment;
+    QPushButton *m_navHistory;
 
     // Header info
     QLabel *m_totalDueLabel;

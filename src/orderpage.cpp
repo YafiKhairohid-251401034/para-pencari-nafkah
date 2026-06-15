@@ -339,6 +339,7 @@ void OrderPage::buildSidebar()
     m_navRegister = makeNavBtn("Register");
     m_navOrder = makeNavBtn("Order");
     m_navPayment = makeNavBtn("Payment");
+    m_navHistory = makeNavBtn("History");
     m_navOrder->setObjectName("navBtnActive");
 
     lay->addWidget(m_navRegister);
@@ -346,10 +347,13 @@ void OrderPage::buildSidebar()
     lay->addWidget(m_navOrder);
     lay->addSpacing(4);
     lay->addWidget(m_navPayment);
+    lay->addSpacing(4);
+    lay->addWidget(m_navHistory);
     lay->addStretch();
 
     connect(m_navRegister, &QPushButton::clicked, this, &OrderPage::navigateToRegister);
     connect(m_navPayment, &QPushButton::clicked, this, &OrderPage::proceedToPayment);
+    connect(m_navHistory, &QPushButton::clicked, this, &OrderPage::navigateToHistory);
 }
 
 void OrderPage::buildHeader()

@@ -28,6 +28,7 @@ public:
 
 signals:
     void navigateToRegister();
+    void navigateToHistory();
     void proceedToPayment();
 
 private slots:
@@ -54,6 +55,7 @@ private:
     QPushButton *m_navRegister;
     QPushButton *m_navOrder;
     QPushButton *m_navPayment;
+    QPushButton *m_navHistory;
 
     // Header
     QFrame *m_header;
