@@ -187,19 +187,19 @@ void PaymentPage::setupUi()
         int c;
     };
     QVector<KeyDef> keys = {
-        {"1", 0, 0},
-        {"2", 0, 1},
-        {"3", 0, 2},
-        {"4", 1, 0},
-        {"5", 1, 1},
-        {"6", 1, 2},
-        {"7", 2, 0},
-        {"8", 2, 1},
-        {"9", 2, 2},
-        {"00", 3, 0},
-        {"0", 3, 1},
-        {"⌫", 3, 2},
-    };
+                            {"1", 0, 0},
+                            {"2", 0, 1},
+                            {"3", 0, 2},
+                            {"4", 1, 0},
+                            {"5", 1, 1},
+                            {"6", 1, 2},
+                            {"7", 2, 0},
+                            {"8", 2, 1},
+                            {"9", 2, 2},
+                            {"00", 3, 0},
+                            {"0", 3, 1},
+                            {"⌫", 3, 2},
+                            };
     for (const KeyDef &k : keys) {
         QPushButton *btn = new QPushButton(k.label);
         btn->setObjectName(k.label == "⌫" ? "numBtnBack" : "numBtn");
@@ -313,13 +313,13 @@ void PaymentPage::buildSidebar()
     lay->setSpacing(0);
     lay->setAlignment(Qt::AlignTop);
 
-    QLabel *brand = new QLabel("brew n bites");
-    brand->setObjectName("sidebarBrand");
-    brand->setAlignment(Qt::AlignCenter);
-    brand->setWordWrap(true);
+    QLabel *logoLabel = new QLabel();
+    QPixmap logoPix(":/images/logobrew.png");
+    logoLabel->setPixmap(logoPix.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    logoLabel->setAlignment(Qt::AlignCenter);
 
-    lay->addWidget(brand);
-    lay->addSpacing(28);
+    lay->addWidget(logoLabel);
+    lay->addSpacing(6);
 
     auto makeNavBtn = [](const QString &text) -> QPushButton * {
         QPushButton *btn = new QPushButton(text);
@@ -638,5 +638,5 @@ void PaymentPage::setupStyle()
                       .arg(Theme::BUTTON_RADIUS)   // %15
                       .arg(Theme::ACCENT_HOVER)    // %16
                       .arg(Theme::TEXT_MUTED)      // %17
-    );
+                  );
 }

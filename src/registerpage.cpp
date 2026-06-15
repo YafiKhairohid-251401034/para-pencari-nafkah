@@ -3,6 +3,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
 #include <QKeyEvent>
+#include <QPixmap>
 #include <QPropertyAnimation>
 #include <QVBoxLayout>
 #include <QRegularExpression>
@@ -16,14 +17,82 @@ RegisterPage::RegisterPage(OrderManager *mgr, QWidget *parent)
     setupStyle();
 }
 
+void RegisterPage::refreshPage()
+{
+    m_nameEdit->clear();    // hapus nama pelanggan sebelumnya
+    m_tableEdit->clear();   // hapus nomor meja sebelumnya
+    m_errorLabel->hide();   // sembunyikan pesan error jika ada
+    m_nameEdit->setFocus(); // langsung fokus ke field nama
+    m_mgr->clearCart();     // bersihkan keranjang & info pelanggan lama
+}
+
+void RegisterPage::buildSidebar()
+{
+    m_sidebar = new QFrame();
+    m_sidebar->setObjectName("sidebar");
+    m_sidebar->setFixedWidth(Theme::SIDEBAR_WIDTH);
+
+    QVBoxLayout *lay = new QVBoxLayout(m_sidebar);
+    lay->setContentsMargins(0, 20, 0, 20);
+    lay->setSpacing(0);
+    lay->setAlignment(Qt::AlignTop);
+
+    // Logo
+    QLabel *logoLabel = new QLabel();
+    QPixmap logoPix(":/images/logobrew.png");
+    logoLabel->setPixmap(logoPix.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    logoLabel->setAlignment(Qt::AlignCenter);
+    lay->addWidget(logoLabel);
+    lay->addSpacing(6);
+
+    // Nav buttons
+    auto makeNavBtn = [](const QString &text) {
+        QPushButton *btn = new QPushButton(text);
+        btn->setObjectName("navBtn");
+        btn->setFixedHeight(36);
+        btn->setCursor(Qt::PointingHandCursor);
+        return btn;
+    };
+
+    m_navRegister = makeNavBtn("Register");
+    m_navOrder    = makeNavBtn("Order");
+    m_navPayment  = makeNavBtn("Payment");
+    m_navHistory  = makeNavBtn("History");
+    m_navRegister->setObjectName("navBtnActive"); // halaman aktif = Register
+
+    lay->addWidget(m_navRegister);
+    lay->addSpacing(4);
+    lay->addWidget(m_navOrder);
+    lay->addSpacing(4);
+    lay->addWidget(m_navPayment);
+    lay->addSpacing(4);
+    lay->addWidget(m_navHistory);
+    lay->addStretch();
+
+    connect(m_navOrder,   &QPushButton::clicked, this, &RegisterPage::navigateToOrder);
+    connect(m_navPayment, &QPushButton::clicked, this, &RegisterPage::navigateToPayment);
+    connect(m_navHistory, &QPushButton::clicked, this, &RegisterPage::navigateToHistory);
+}
+
 void RegisterPage::setupUi()
 {
     setMinimumSize(Theme::WINDOW_MIN_W, Theme::WINDOW_MIN_H);
 
-    // ── Root layout — center card di tengah layar ────────────────────────
-    QVBoxLayout *rootLayout = new QVBoxLayout(this);
+    // ── Root layout — sidebar kiri + area konten ─────────────────────────
+    QHBoxLayout *rootLayout = new QHBoxLayout(this);
     rootLayout->setContentsMargins(0, 0, 0, 0);
-    rootLayout->setAlignment(Qt::AlignCenter);
+    rootLayout->setSpacing(0);
+
+    // Bangun sidebar
+    buildSidebar();
+    rootLayout->addWidget(m_sidebar);
+
+    // Area konten — card di tengah
+    QWidget *contentArea = new QWidget();
+    contentArea->setObjectName("registerContent");
+    QVBoxLayout *contentLayout = new QVBoxLayout(contentArea);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    contentLayout->setAlignment(Qt::AlignCenter);
 
     // ── Card ─────────────────────────────────────────────────────────────
     QFrame *card = new QFrame();
@@ -100,14 +169,48 @@ void RegisterPage::setupUi()
     shadow->setColor(QColor(60, 40, 20, 30));
     card->setGraphicsEffect(shadow);
 
-    rootLayout->addWidget(card, 0, Qt::AlignCenter);
+    contentLayout->addWidget(card, 0, Qt::AlignCenter);
+    rootLayout->addWidget(contentArea, 1);
 }
 
 void RegisterPage::setupStyle()
 {
     setStyleSheet(QString(R"(
-        RegisterPage {
+        RegisterPage, #registerContent {
             background-color: %1;
+        }
+
+        /* ── Sidebar ── */
+        #sidebar {
+            background-color: %16;
+            border-right: 1px solid %3;
+        }
+        #navBtn {
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            font-family: '%6';
+            font-size: 12px;
+            color: %7;
+            text-align: center;
+            padding: 6px 8px;
+            margin: 0 10px;
+        }
+        #navBtn:hover {
+            background: %17;
+            color: %18;
+        }
+        #navBtnActive {
+            background: %17;
+            border: none;
+            border-radius: 6px;
+            font-family: '%6';
+            font-size: 12px;
+            font-weight: bold;
+            color: %18;
+            text-align: center;
+            padding: 6px 8px;
+            margin: 0 10px;
         }
 
         #registerCard {
@@ -175,7 +278,7 @@ void RegisterPage::setupStyle()
             background-color: %15;
         }
     )")
-                      .arg("#FAF8F5")             // %1 — putih hangat
+                      .arg("#FAF8F5")             // %1  — latar belakang halaman
                       .arg(Theme::BG_CARD)        // %2
                       .arg(Theme::BORDER_LIGHT)   // %3
                       .arg(Theme::FONT_DISPLAY)   // %4
@@ -190,7 +293,10 @@ void RegisterPage::setupStyle()
                       .arg(Theme::COLOR_ERROR)    // %13
                       .arg(Theme::BUTTON_RADIUS)  // %14
                       .arg(Theme::ACCENT_HOVER)   // %15
-    );
+                      .arg(Theme::BG_SIDEBAR)     // %16 — warna sidebar
+                      .arg(Theme::ACCENT_LIGHT)   // %17 — latar tombol aktif
+                      .arg(Theme::ACCENT_PRIMARY) // %18 — teks tombol aktif
+                  );
 }
 
 void RegisterPage::onStartOrder()

@@ -56,6 +56,11 @@ void MainWindow::setupUi()
     connect(m_orderPage, &OrderPage::navigateToRegister, this, &MainWindow::showRegisterPage);
     connect(m_paymentPage, &PaymentPage::navigateToOrder, this, &MainWindow::showOrderPage);
 
+    // Register page sidebar nav wiring
+    connect(m_registerPage, &RegisterPage::navigateToOrder,   this, &MainWindow::showOrderPage);
+    connect(m_registerPage, &RegisterPage::navigateToPayment, this, &MainWindow::showPaymentPage);
+    connect(m_registerPage, &RegisterPage::navigateToHistory, this, &MainWindow::showHistoryPage);
+
     // History page sidebar nav wiring
     connect(m_historyPage, &HistoryPage::navigateToRegister, this, &MainWindow::showRegisterPage);
     connect(m_historyPage, &HistoryPage::navigateToOrder, this, &MainWindow::showOrderPage);
@@ -70,6 +75,7 @@ void MainWindow::setupUi()
 
 void MainWindow::showRegisterPage()
 {
+    m_registerPage->refreshPage(); // bersihkan form & keranjang sebelum tampil
     m_stack->setCurrentIndex(0);
 }
 

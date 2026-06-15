@@ -556,11 +556,12 @@ void OrderPage::buildOrderPanel()
     lay->addWidget(totalFrame);
     lay->addSpacing(12);
 
-    // Proceed button
+    // Proceed button — disabled sampai ada item di keranjang
     m_payBtn = new QPushButton("Proceed to Payment  →");
-    m_payBtn->setObjectName("payBtn");
+    m_payBtn->setObjectName("payBtnDisabled");
     m_payBtn->setMinimumHeight(46);
-    m_payBtn->setCursor(Qt::PointingHandCursor);
+    m_payBtn->setCursor(Qt::ForbiddenCursor); // kursor silang saat disabled
+    m_payBtn->setEnabled(false);
     connect(m_payBtn, &QPushButton::clicked, this, &OrderPage::proceedToPayment);
     lay->addWidget(m_payBtn);
 }
@@ -651,6 +652,14 @@ void OrderPage::refreshOrderPanel()
     m_subtotalValue->setText(m_mgr->formattedSubtotal());
     m_taxValue->setText(m_mgr->formattedTax());
     m_totalValue->setText(m_mgr->formattedTotal());
+
+    // Tombol payment aktif hanya jika ada item di keranjang
+    bool hasItems = !m_mgr->orderLines().isEmpty();
+    m_payBtn->setEnabled(hasItems);
+    m_payBtn->setCursor(hasItems ? Qt::PointingHandCursor : Qt::ForbiddenCursor);
+    m_payBtn->setObjectName(hasItems ? "payBtn" : "payBtnDisabled");
+    m_payBtn->style()->unpolish(m_payBtn); // paksa Qt re-apply stylesheet
+    m_payBtn->style()->polish(m_payBtn);
 }
 
 void OrderPage::setupStyle()
@@ -844,6 +853,16 @@ void OrderPage::setupStyle()
         #payBtn:hover {
             background-color: %18;
         }
+        /* Tombol payment saat keranjang masih kosong */
+        #payBtnDisabled {
+            background-color: %19;
+            color: %20;
+            font-family: '%15';
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            border-radius: %17px;
+        }
     )")
                       .arg(Theme::BG_APP)         // %1
                       .arg(Theme::BG_SIDEBAR)     // %2
@@ -863,6 +882,8 @@ void OrderPage::setupStyle()
                       .arg(Theme::FONT_MONO)      // %16
                       .arg(Theme::BUTTON_RADIUS)  // %17
                       .arg(Theme::ACCENT_HOVER)   // %18
+                      .arg(Theme::BORDER_MEDIUM)  // %19 — latar disabled
+                      .arg(Theme::TEXT_MUTED)     // %20 — teks disabled
                   );
 }
 
