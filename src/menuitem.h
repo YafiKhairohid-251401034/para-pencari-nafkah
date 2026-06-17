@@ -1,9 +1,7 @@
 #pragma once
 #include <QString>
 
-// =============================================================================
 //  MenuItem — Model data untuk satu produk menu
-// =============================================================================
 
 enum class MenuCategory { All, Coffee, NonCoffee, Cake, Food };
 

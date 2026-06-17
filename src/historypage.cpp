@@ -44,11 +44,11 @@ void HistoryPage::setupUi()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // ── Sidebar ──────────────────────────────────────────────────────────
+    //  Sidebar
     buildSidebar();
     mainLayout->addWidget(m_sidebar);
 
-    // ── Center: list of transactions ───────────────────────────────────
+    // Center: list of transactions
     QWidget *centerWidget = new QWidget();
     centerWidget->setObjectName("histMain");
     QVBoxLayout *centerLay = new QVBoxLayout(centerWidget);
@@ -65,7 +65,7 @@ void HistoryPage::setupUi()
 
     centerLay->addSpacing(12);
 
-    // ── Filter tanggal ───────────────────────────────────────────────────
+    // Filter tanggal
     centerLay->addLayout(buildFilterBar());
 
     centerLay->addSpacing(8);
@@ -92,7 +92,7 @@ void HistoryPage::setupUi()
 
     mainLayout->addWidget(centerWidget, 1);
 
-    // ── Detail panel (mirip struk) ──────────────────────────────────────
+    //  Detail panel (mirip struk)
     m_detailPanel = new QFrame();
     m_detailPanel->setObjectName("histDetailPanel");
     m_detailPanel->setFixedWidth(300);

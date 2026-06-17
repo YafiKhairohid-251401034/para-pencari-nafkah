@@ -5,9 +5,7 @@
 #include <QTcpSocket>
 #include <QTextStream>
 
-// =============================================================================
 //  StrukHttpServer — implementasi
-// =============================================================================
 
 StrukHttpServer::StrukHttpServer(QObject *parent)
     : QObject(parent)
@@ -22,9 +20,7 @@ StrukHttpServer::~StrukHttpServer()
     stop();
 }
 
-// -----------------------------------------------------------------------------
 //  start — simpan snapshot data + jalankan server di port bebas
-// -----------------------------------------------------------------------------
 bool StrukHttpServer::start(OrderManager *mgr,
                             const QString &paymentMethod,
                             long long cashPaid)
@@ -71,9 +67,7 @@ bool StrukHttpServer::isRunning() const
     return m_server && m_server->isListening();
 }
 
-// -----------------------------------------------------------------------------
 //  onNewConnection — balas setiap request dengan HTML struk
-// -----------------------------------------------------------------------------
 void StrukHttpServer::onNewConnection()
 {
     while (m_server->hasPendingConnections()) {
@@ -99,15 +93,13 @@ void StrukHttpServer::onNewConnection()
     }
 }
 
-// -----------------------------------------------------------------------------
 //  buildHtml — render struk sebagai HTML yang mobile-friendly
-// -----------------------------------------------------------------------------
 QString StrukHttpServer::buildHtml() const
 {
     bool isTunai = (m_paymentMethod == "Tunai");
     long long kembalian = isTunai ? (m_cashPaid - m_total) : 0LL;
 
-    // ── Baris item ───────────────────────────────────────────────────────
+    // item
     QString itemRows;
     for (const SnapLine &line : m_lines) {
         itemRows += QString(
@@ -121,7 +113,7 @@ QString StrukHttpServer::buildHtml() const
                         .arg(fmtRp(line.subtotalLine));
     }
 
-    // ── Baris bayar/kembalian (hanya Tunai) ──────────────────────────────
+    //bayar/kembalian (hanya Tunai)
     QString cashRows;
     if (isTunai) {
         cashRows = QString(
@@ -133,7 +125,6 @@ QString StrukHttpServer::buildHtml() const
                        .arg(fmtRp(kembalian));
     }
 
-    // ── HTML lengkap ─────────────────────────────────────────────────────
     return QString(R"html(<!DOCTYPE html>
 <html lang="id">
 <head>

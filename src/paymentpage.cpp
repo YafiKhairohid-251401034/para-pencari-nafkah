@@ -75,11 +75,10 @@ void PaymentPage::setupUi()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // ── Sidebar ──────────────────────────────────────────────────────────────
     buildSidebar();
     mainLayout->addWidget(m_sidebar);
 
-    // ── Center (topbar + numpad) ──────────────────────────────────────────
+    // Center (topbar + numpad)
     QWidget *centerWidget = new QWidget();
     centerWidget->setObjectName("payMain");
     QVBoxLayout *centerLay = new QVBoxLayout(centerWidget);
@@ -164,13 +163,13 @@ void PaymentPage::setupUi()
     numpadInnerLay->setContentsMargins(0, 0, 0, 0);
     numpadInnerLay->setSpacing(12);
 
-    // ── Widget QRIS: gambar QR (struk pembayaran dilihat di HP via scan) ──
+    //  Widget QRIS: gambar QR (struk pembayaran dilihat di HP via scan)
     m_qrisImageLabel = new QWidget(); // container utama (nama dipertahankan)
     QHBoxLayout *qrisRowLay = new QHBoxLayout(m_qrisImageLabel);
     qrisRowLay->setContentsMargins(0, 0, 0, 0);
     qrisRowLay->setSpacing(24);
 
-    // -- Kolom kiri: gambar QR --
+    // Kolom kiri: gambar QR
     QVBoxLayout *qrCol = new QVBoxLayout();
     qrCol->setSpacing(10);
 
@@ -178,9 +177,7 @@ void PaymentPage::setupUi()
     qrTitle->setObjectName("qrisColTitle");
     qrTitle->setAlignment(Qt::AlignCenter);
 
-    // Gambar QR diisi secara dinamis oleh updateQrisCodeImage() — lihat di sana.
-    // QR berisi URL ke StrukHttpServer lokal; saat dipindai, HP pelanggan
-    // akan membuka halaman struk pembayaran (bukan gambar statis lagi).
+    // Gambar QR diisi secara dinamis oleh updateQrisCodeImage()
     m_qrImageLbl = new QLabel();
     m_qrImageLbl->setAlignment(Qt::AlignCenter);
     m_qrImageLbl->setObjectName("qrisImageBox");
@@ -266,7 +263,7 @@ void PaymentPage::setupUi()
     centerLay->addWidget(numpadArea, 1);
     mainLayout->addWidget(centerWidget, 1);
 
-    // ── Summary panel ────────────────────────────────────────────────────────
+    // Summary panel
     QFrame *summaryPanel = new QFrame();
     summaryPanel->setObjectName("summaryPanel");
     summaryPanel->setFixedWidth(260);
@@ -459,12 +456,7 @@ void PaymentPage::updateChange()
     }
 }
 
-// -----------------------------------------------------------------------------
-//  updateQrisCodeImage — nyalakan StrukHttpServer dengan snapshot pesanan
-//  saat ini, lalu render URL-nya menjadi QR code dan tampilkan di m_qrImageLbl.
-//  Hasilnya: saat QR dipindai dari HP pelanggan (harus 1 WiFi/LAN dengan PC
-//  kasir), browser HP akan membuka halaman HTML struk pembayaran.
-// -----------------------------------------------------------------------------
+//  updateQrisCodeImage
 void PaymentPage::updateQrisCodeImage()
 {
     if (!m_strukServer || !m_qrImageLbl)
@@ -496,11 +488,7 @@ void PaymentPage::updateQrisCodeImage()
     }
 }
 
-// -----------------------------------------------------------------------------
 //  renderQrPixmap — ubah matriks modul dari qrcodegen::QrCode menjadi QPixmap
-//  hitam-putih siap tampil, lengkap dengan quiet zone (border putih) di tepi
-//  agar mudah dipindai kamera HP.
-// -----------------------------------------------------------------------------
 QPixmap PaymentPage::renderQrPixmap(const QString &text, int moduleSize, int border)
 {
     using qrcodegen::QrCode;

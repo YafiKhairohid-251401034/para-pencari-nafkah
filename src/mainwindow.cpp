@@ -41,7 +41,7 @@ void MainWindow::setupUi()
 
     setCentralWidget(m_stack);
 
-    // ── Wiring navigation ────────────────────────────────────────────────────
+    //  Wiring navigation
     connect(m_registerPage, &RegisterPage::proceedToOrder, this, &MainWindow::showOrderPage);
     connect(m_orderPage, &OrderPage::proceedToPayment, this, &MainWindow::showPaymentPage);
     connect(m_paymentPage,

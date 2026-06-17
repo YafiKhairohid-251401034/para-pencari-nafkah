@@ -5,10 +5,8 @@
 #include <QVector>
 #include "ordermanager.h"
 
-// =============================================================================
 //  HistoryManager — Menyimpan & memuat riwayat transaksi secara persisten
 //  menggunakan QSettings (file INI lokal, tidak perlu modul Qt::Sql tambahan)
-// =============================================================================
 
 struct ReceiptItem
 {

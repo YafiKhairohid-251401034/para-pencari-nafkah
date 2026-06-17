@@ -8,11 +8,9 @@
 #include "ordermanager.h"
 #include "historymanager.h"
 
-class StrukHttpServer; // forward decl — lihat strukhttpserver.h
+class StrukHttpServer;
 
-// =============================================================================
 //  PaymentPage — Layar kasir: numpad tunai + QRIS + ringkasan
-// =============================================================================
 
 class PaymentPage : public QWidget {
     Q_OBJECT

@@ -120,9 +120,7 @@ int OrderManager::findLine(int itemId) const
     return -1;
 }
 
-// =============================================================================
 //  MENU DATA — Tambah / ubah item menu di sini
-// =============================================================================
 QVector<MenuItem> OrderManager::allMenuItems()
 {
     return {

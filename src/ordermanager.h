@@ -4,9 +4,7 @@
 #include <QVector>
 #include "menuitem.h"
 
-// =============================================================================
 //  OrderManager — Singleton state manager untuk sesi transaksi
-// =============================================================================
 
 struct OrderLine
 {

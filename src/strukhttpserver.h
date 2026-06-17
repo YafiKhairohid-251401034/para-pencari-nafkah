@@ -5,14 +5,12 @@
 #include <QString>
 #include "ordermanager.h"
 
-// =============================================================================
 //  StrukHttpServer — Server HTTP mini yang serve halaman struk ke HP pelanggan.
 //  Cara kerja:
 //    1. start(mgr, paymentMethod, cashPaid) → pilih port bebas, simpan data struk
 //    2. serverUrl() → kembalikan "http://[IP WiFi lokal]:PORT/struk"
 //    3. HP scan QR → buka URL → terima HTML struk yang cantik
 //    4. stop() → matikan server (dipanggil setelah transaksi selesai)
-// =============================================================================
 
 class StrukHttpServer : public QObject
 {

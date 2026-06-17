@@ -8,9 +8,7 @@
 #include "paymentpage.h"
 #include "registerpage.h"
 
-// =============================================================================
 //  MainWindow — Kontainer utama dengan QStackedWidget untuk navigasi antar layar
-// =============================================================================
 
 class MainWindow : public QMainWindow
 {

@@ -1,11 +1,9 @@
 #pragma once
-// =============================================================================
 //  qrcodegen.h — Minimal QR Code generator (public domain)
 //  Based on the algorithm by Project Nayuki (https://www.nayuki.io/page/qr-code-generator-library)
 //  Simplified single-header C++ port: supports Byte-mode encoding,
 //  automatic version selection, and Error Correction Level LOW.
 //  No external dependencies — used to render QRIS-style QR codes offline.
-// =============================================================================
 
 #include <vector>
 #include <string>
@@ -19,13 +17,11 @@ class QrCode {
 public:
     enum class Ecc { LOW = 0, MEDIUM, QUARTILE, HIGH };
 
-    // Encodes the given text (treated as raw bytes) into a QR code,
-    // automatically choosing the smallest version (1-40) that fits.
     static QrCode encodeText(const std::string &text, Ecc ecl = Ecc::LOW) {
         std::vector<uint8_t> data(text.begin(), text.end());
         for (int version = 1; version <= 40; version++) {
             int dataCapacityBits = getNumDataCodewords(version, ecl) * 8;
-            // Byte mode header: 4 bits mode + char count indicator + 8 bits per byte
+
             int ccBits = (version <= 9) ? 8 : 16;
             int usedBits = 4 + ccBits + static_cast<int>(data.size()) * 8;
             if (usedBits <= dataCapacityBits) {
@@ -37,7 +33,6 @@ public:
 
     int size() const { return sideLength; }
 
-    // true = dark module, false = light module
     bool getModule(int x, int y) const {
         if (x < 0 || x >= sideLength || y < 0 || y >= sideLength) return false;
         return modules[y * sideLength + x];
@@ -60,37 +55,32 @@ private:
         applyBestMask(ecl);
     }
 
-    // ---------------------------------------------------------------
-    // Data encoding (Byte mode) + Reed-Solomon error correction
-    // ---------------------------------------------------------------
     std::vector<uint8_t> encodeDataCodewords(const std::vector<uint8_t> &data, Ecc ecl) {
         int dataCapacityBits = getNumDataCodewords(version, ecl) * 8;
         int ccBits = (version <= 9) ? 8 : 16;
 
-        // Bit buffer
+
         std::vector<bool> bb;
         auto appendBits = [&bb](uint32_t val, int len) {
             for (int i = len - 1; i >= 0; i--)
                 bb.push_back(((val >> i) & 1u) != 0);
         };
 
-        appendBits(0b0100, 4); // Byte mode indicator
+        appendBits(0b0100, 4);
         appendBits(static_cast<uint32_t>(data.size()), ccBits);
         for (uint8_t b : data) appendBits(b, 8);
 
-        // Terminator + bit padding to byte boundary
         int padTerm = std::min(4, dataCapacityBits - static_cast<int>(bb.size()));
         for (int i = 0; i < padTerm; i++) bb.push_back(false);
         while (bb.size() % 8 != 0) bb.push_back(false);
 
-        // Pack into bytes
         std::vector<uint8_t> dataCodewords;
         for (size_t i = 0; i < bb.size(); i += 8) {
             uint8_t byte = 0;
             for (int j = 0; j < 8; j++) byte = (byte << 1) | (bb[i + j] ? 1 : 0);
             dataCodewords.push_back(byte);
         }
-        // Pad codewords with alternating 0xEC, 0x11
+
         const uint8_t padBytes[2] = {0xEC, 0x11};
         int needed = getNumDataCodewords(version, ecl);
         for (int i = 0; dataCodewords.size() < static_cast<size_t>(needed); i++)
@@ -99,7 +89,6 @@ private:
         return addEccAndInterleave(dataCodewords, ecl);
     }
 
-    // Reed-Solomon over GF(256)
     static std::vector<uint8_t> reedSolomonComputeDivisor(int degree) {
         std::vector<uint8_t> result(degree, 0);
         result[degree - 1] = 1;
@@ -166,9 +155,7 @@ private:
         return result;
     }
 
-    // ---------------------------------------------------------------
     // Module placement
-    // ---------------------------------------------------------------
     void setFunctionModule(int x, int y, bool dark) {
         modules[y * sideLength + x] = dark;
         isFunction[y * sideLength + x] = true;
@@ -225,13 +212,7 @@ private:
         return result;
     }
 
-    // Format/version info bits using fixed low-ECC patterns is complex; we draw
-    // a static reserved area filled by the masking step (good enough since most
-    // phone scanners brute-force mask + format on small low-version codes too,
-    // but to be robust we compute proper format info below).
     void drawFormatBits() {
-        // placeholder: actual format bits drawn in applyBestMask once mask chosen
-        // reserve the format info areas as function modules (value set later)
         for (int i = 0; i <= 8; i++) {
             setFunctionModule(8, i, false);
             setFunctionModule(i, 8, false);
@@ -328,7 +309,7 @@ private:
                     c == modules[(y + 1) * sideLength + x + 1])
                     result += 3;
             }
-        // Dark module ratio
+
         int dark = 0;
         for (bool m : modules) if (m) dark++;
         int total = sideLength * sideLength;
@@ -338,7 +319,7 @@ private:
     }
 
     void applyBestMask(Ecc ecl) {
-        // Apply each mask, score it, keep the best (lowest penalty)
+
         long bestScore = -1;
         int bestMask = 0;
         std::vector<bool> bestModules;
@@ -351,7 +332,7 @@ private:
                 bestMask = mask;
                 bestModules = modules;
             }
-            applyMask(mask); // undo data mask (format bits are function modules, unaffected)
+            applyMask(mask);
             clearFormatBits();
         }
         modules = bestModules;
@@ -417,7 +398,6 @@ private:
         return raw - eccPer * blocks;
     }
 
-    // Tables indexed [ecl][version] for version 1..40 (index 0 unused)
     static const int8_t ECC_CODEWORDS_PER_BLOCK[4][41];
     static const int8_t NUM_ERROR_CORRECTION_BLOCKS[4][41];
 };
@@ -436,4 +416,4 @@ inline const int8_t QrCode::NUM_ERROR_CORRECTION_BLOCKS[4][41] = {
     {-1, 1, 1, 2, 4, 4, 4, 5, 6, 8, 8, 11, 11, 16, 16, 18, 16, 19, 21, 25, 25, 25, 34, 30, 32, 35, 37, 40, 42, 45, 48, 51, 54, 57, 60, 63, 66, 70, 74, 77, 81}
 };
 
-} // namespace qrcodegen
+}

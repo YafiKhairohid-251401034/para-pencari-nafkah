@@ -13,10 +13,7 @@
 #include <QCoreApplication>
 #include "theme.h"
 
-
-// =============================================================================
 //  MenuCard — widget kartu produk di grid
-// =============================================================================
 class MenuCard : public QFrame
 {
     Q_OBJECT
@@ -154,9 +151,7 @@ private:
     QPushButton *m_addBtn;
 };
 
-// =============================================================================
 //  OrderLineWidget — satu baris di panel current order
-// =============================================================================
 class OrderLineWidget : public QFrame
 {
     Q_OBJECT
@@ -259,9 +254,7 @@ private:
     QPushButton *m_removeBtn;
 };
 
-// =============================================================================
 //  OrderPage
-// =============================================================================
 OrderPage::OrderPage(OrderManager *mgr, QWidget *parent)
     : QWidget(parent)
     , m_mgr(mgr)
@@ -882,8 +875,8 @@ void OrderPage::setupStyle()
                       .arg(Theme::FONT_MONO)      // %16
                       .arg(Theme::BUTTON_RADIUS)  // %17
                       .arg(Theme::ACCENT_HOVER)   // %18
-                      .arg(Theme::BORDER_MEDIUM)  // %19 — latar disabled
-                      .arg(Theme::TEXT_MUTED)     // %20 — teks disabled
+                      .arg(Theme::BORDER_MEDIUM)  // %19
+                      .arg(Theme::TEXT_MUTED)     // %20
                   );
 }
 

@@ -10,9 +10,7 @@
 #include "menuitem.h"
 #include "ordermanager.h"
 
-// =============================================================================
 //  OrderPage — Layar utama: grid menu + panel current order
-// =============================================================================
 
 class MenuCard;
 class OrderLineWidget;

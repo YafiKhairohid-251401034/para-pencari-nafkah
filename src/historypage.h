@@ -12,10 +12,8 @@
 #include "historymanager.h"
 #include "ordermanager.h"
 
-// =============================================================================
 //  HistoryPage — Daftar riwayat transaksi + panel detail (mirip struk)
 //  + Filter penjualan per tanggal
-// =============================================================================
 
 class HistoryPage : public QWidget
 {
