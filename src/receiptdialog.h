@@ -9,5 +9,9 @@ class ReceiptDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit ReceiptDialog(OrderManager *mgr, long long cashPaid, QWidget *parent = nullptr);
+    // cashPaid diabaikan jika paymentMethod bukan "Tunai"
+    explicit ReceiptDialog(OrderManager *mgr,
+                           long long cashPaid,
+                           const QString &paymentMethod,
+                           QWidget *parent = nullptr);
 };

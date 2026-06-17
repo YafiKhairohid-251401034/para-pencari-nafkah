@@ -31,6 +31,9 @@ HistoryPage::HistoryPage(HistoryManager *historyMgr, QWidget *parent)
 
 void HistoryPage::refreshPage()
 {
+    // Tampilkan "Hari Ini" sebagai default setiap kali halaman dibuka
+    m_dateFilterEdit->setDate(QDate::currentDate());
+    m_filterActive = true;
     populateList();
     clearDetail();
 }
@@ -59,6 +62,17 @@ void HistoryPage::setupUi()
     QLabel *subtitleLabel = new QLabel("Daftar transaksi yang telah selesai, urut dari yang terbaru.");
     subtitleLabel->setObjectName("histSubtitle");
     centerLay->addWidget(subtitleLabel);
+
+    centerLay->addSpacing(12);
+
+    // ── Filter tanggal ───────────────────────────────────────────────────
+    centerLay->addLayout(buildFilterBar());
+
+    centerLay->addSpacing(8);
+
+    m_summaryLabel = new QLabel();
+    m_summaryLabel->setObjectName("histSummary");
+    centerLay->addWidget(m_summaryLabel);
 
     centerLay->addSpacing(8);
 
@@ -139,14 +153,85 @@ void HistoryPage::buildSidebar()
     connect(m_navPayment, &QPushButton::clicked, this, &HistoryPage::navigateToPayment);
 }
 
-void HistoryPage::populateList()
+QHBoxLayout *HistoryPage::buildFilterBar()
 {
-    m_records = m_historyMgr->allTransactions();
-    m_listWidget->clear();
+    QHBoxLayout *filterLay = new QHBoxLayout();
+    filterLay->setSpacing(8);
 
+    QLabel *filterLbl = new QLabel("Tampilkan tanggal:");
+    filterLbl->setObjectName("histFilterLbl");
+
+    // Pilih tanggal — default ke hari ini
+    m_dateFilterEdit = new QDateEdit(QDate::currentDate());
+    m_dateFilterEdit->setObjectName("histDateEdit");
+    m_dateFilterEdit->setCalendarPopup(true);
+    m_dateFilterEdit->setDisplayFormat("dd/MM/yyyy");
+    m_dateFilterEdit->setFixedHeight(32);
+    connect(m_dateFilterEdit, &QDateEdit::dateChanged, this, &HistoryPage::onFilterDateChanged);
+
+    m_btnToday = new QPushButton("Hari Ini");
+    m_btnToday->setObjectName("histFilterBtn");
+    m_btnToday->setFixedHeight(32);
+    m_btnToday->setCursor(Qt::PointingHandCursor);
+    connect(m_btnToday, &QPushButton::clicked, this, &HistoryPage::onShowToday);
+
+    m_btnAllDates = new QPushButton("Semua Tanggal");
+    m_btnAllDates->setObjectName("histFilterBtn");
+    m_btnAllDates->setFixedHeight(32);
+    m_btnAllDates->setCursor(Qt::PointingHandCursor);
+    connect(m_btnAllDates, &QPushButton::clicked, this, &HistoryPage::onShowAll);
+
+    filterLay->addWidget(filterLbl);
+    filterLay->addWidget(m_dateFilterEdit);
+    filterLay->addWidget(m_btnToday);
+    filterLay->addWidget(m_btnAllDates);
+    filterLay->addStretch();
+
+    return filterLay;
+}
+
+void HistoryPage::onFilterDateChanged(const QDate &date)
+{
+    Q_UNUSED(date);
+    m_filterActive = true; // tanggal spesifik dipilih dari kalender
+    applyDateFilter();
+}
+
+void HistoryPage::onShowToday()
+{
+    m_dateFilterEdit->blockSignals(true);
+    m_dateFilterEdit->setDate(QDate::currentDate());
+    m_dateFilterEdit->blockSignals(false);
+    m_filterActive = true;
+    applyDateFilter();
+}
+
+void HistoryPage::onShowAll()
+{
+    m_filterActive = false; // matikan filter — tampilkan semua riwayat
+    applyDateFilter();
+}
+
+void HistoryPage::applyDateFilter()
+{
+    if (!m_filterActive) {
+        m_records = m_allRecords;
+    } else {
+        QDate target = m_dateFilterEdit->date();
+        m_records.clear();
+        for (const TransactionRecord &rec : m_allRecords) {
+            if (rec.parsedDate() == target)
+                m_records.append(rec);
+        }
+    }
+
+    updateSummaryBar();
+
+    m_listWidget->clear();
     if (m_records.isEmpty()) {
         m_listWidget->hide();
         m_emptyLabel->show();
+        clearDetail();
         return;
     }
 
@@ -166,7 +251,7 @@ void HistoryPage::populateList()
         leftCol->setSpacing(2);
         QLabel *nameLbl = new QLabel(rec.customerName.isEmpty() ? "—" : rec.customerName);
         nameLbl->setObjectName("histCardName");
-        QLabel *dateLbl = new QLabel(QString("%1  ·  Meja %2").arg(rec.dateTime, rec.tableNumber));
+        QLabel *dateLbl = new QLabel(QString("%1  ·  Meja %2").arg(rec.formattedDateTime(), rec.tableNumber));
         dateLbl->setObjectName("histCardSub");
         leftCol->addWidget(nameLbl);
         leftCol->addWidget(dateLbl);
@@ -190,6 +275,28 @@ void HistoryPage::populateList()
         m_listWidget->addItem(listItem);
         m_listWidget->setItemWidget(listItem, card);
     }
+}
+
+void HistoryPage::updateSummaryBar()
+{
+    long long totalOmzet = 0;
+    for (const TransactionRecord &rec : m_records)
+        totalOmzet += rec.total;
+
+    QString periodText = m_filterActive
+                             ? QString("tanggal %1").arg(m_dateFilterEdit->date().toString("dd/MM/yyyy"))
+                             : "semua tanggal";
+
+    m_summaryLabel->setText(QString("%1 transaksi  ·  Total penjualan %2  (%3)")
+                                .arg(m_records.size())
+                                .arg(formatRp(totalOmzet))
+                                .arg(periodText));
+}
+
+void HistoryPage::populateList()
+{
+    m_allRecords = m_historyMgr->allTransactions();
+    applyDateFilter();
 }
 
 void HistoryPage::onTransactionSelected(int row)
@@ -241,13 +348,13 @@ void HistoryPage::showDetail(const TransactionRecord &rec)
     lay->addWidget(title);
     lay->addSpacing(4);
 
-    QLabel *dateLbl = new QLabel(rec.dateTime);
+    QLabel *dateLbl = new QLabel(rec.formattedDateTime());
     dateLbl->setObjectName("histDetailMeta");
     lay->addWidget(dateLbl);
 
     QLabel *custLbl = new QLabel(QString("%1  ·  Meja %2")
-                                      .arg(rec.customerName.isEmpty() ? "—" : rec.customerName,
-                                           rec.tableNumber));
+                                     .arg(rec.customerName.isEmpty() ? "—" : rec.customerName,
+                                          rec.tableNumber));
     custLbl->setObjectName("histDetailMeta");
     lay->addWidget(custLbl);
 
@@ -376,6 +483,49 @@ void HistoryPage::setupStyle()
             font-size: 12px;
             color: %5;
         }
+        #histFilterLbl {
+            font-family: '%4';
+            font-size: 12px;
+            color: %5;
+        }
+        #histDateEdit {
+            background-color: %10;
+            border: 1.5px solid %3;
+            border-radius: 6px;
+            padding: 0 8px;
+            font-family: '%11';
+            font-size: 12px;
+            color: #000000;
+        }
+        #histDateEdit QAbstractItemView {
+            color: #000000;
+        }
+        #histDateEdit QCalendarWidget QWidget {
+            color: #000000;
+        }
+        #histFilterBtn {
+            background: %10;
+            border: 1.5px solid %3;
+            border-radius: 6px;
+            font-family: '%4';
+            font-size: 12px;
+            color: %5;
+            padding: 0 14px;
+        }
+        #histFilterBtn:hover {
+            background: %6;
+            border-color: %7;
+            color: %7;
+        }
+        #histSummary {
+            font-family: '%11';
+            font-size: 12px;
+            font-weight: bold;
+            color: %7;
+            background: %6;
+            border-radius: 8px;
+            padding: 8px 14px;
+        }
         #histList {
             background: transparent;
             border: none;
@@ -476,6 +626,7 @@ void HistoryPage::setupStyle()
             font-weight: bold;
             color: %7;
         }
+    )
     )")
                       .arg(Theme::BG_APP)         // %1
                       .arg(Theme::BG_SIDEBAR)     // %2
@@ -488,5 +639,5 @@ void HistoryPage::setupStyle()
                       .arg(Theme::TEXT_PRIMARY)   // %9
                       .arg(Theme::BG_CARD)        // %10
                       .arg(Theme::FONT_MONO)      // %11
-    );
+                  );
 }

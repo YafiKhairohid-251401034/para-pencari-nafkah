@@ -22,6 +22,34 @@ QString TransactionRecord::formattedTotal() const
 }
 
 // =============================================================================
+//  formattedDateTime — ubah "dd/MM/yyyy hh:mm" mentah menjadi format yang
+//  lebih jelas & menarik dibaca, mis. "Rabu, 17 Juni 2026, 14:30".
+//  Nama hari & bulan di-hardcode (bukan QLocale) supaya hasilnya konsisten
+//  dalam Bahasa Indonesia di komputer mana pun, apa pun locale sistemnya.
+// =============================================================================
+static const char *const HARI_ID[8] =
+    {"", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"};
+static const char *const BULAN_ID[13] =
+    {"",       "Januari", "Februari", "Maret",     "April",   "Mei",
+     "Juni",   "Juli",    "Agustus",  "September", "Oktober", "November",
+     "Desember"};
+
+QString TransactionRecord::formattedDateTime() const
+{
+    QDateTime dt = QDateTime::fromString(dateTime, "dd/MM/yyyy hh:mm");
+    if (!dt.isValid())
+        return dateTime; // fallback — data lama/tidak terduga, tampilkan apa adanya
+
+    const QDate d = dt.date();
+    return QString("%1, %2 %3 %4, %5")
+        .arg(HARI_ID[d.dayOfWeek()])
+        .arg(d.day())
+        .arg(BULAN_ID[d.month()])
+        .arg(d.year())
+        .arg(dt.toString("HH:mm"));
+}
+
+// =============================================================================
 //  Lokasi file penyimpanan
 //  Disimpan di folder AppData/AppConfig pengguna sehingga riwayat tetap ada
 //  walaupun aplikasi ditutup/dibuka kembali di lain waktu.

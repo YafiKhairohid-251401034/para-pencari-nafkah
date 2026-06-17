@@ -1,4 +1,5 @@
 #pragma once
+#include <QDate>
 #include <QObject>
 #include <QString>
 #include <QVector>
@@ -32,7 +33,16 @@ struct TransactionRecord
     QVector<ReceiptItem> items;
 
     QString formattedTotal() const;
-    QString formattedDateTime() const { return dateTime; }
+
+    // Format tampilan yang lebih jelas & menarik, mis. "Rabu, 17 Juni 2026, 14:30"
+    // (dateTime mentah tetap disimpan dalam format "dd/MM/yyyy hh:mm" untuk parsing/filter)
+    QString formattedDateTime() const;
+
+    // Ambil bagian tanggal saja (tanpa jam) untuk keperluan filter per hari
+    QDate parsedDate() const
+    {
+        return QDate::fromString(dateTime.left(10), "dd/MM/yyyy");
+    }
 };
 
 class HistoryManager : public QObject

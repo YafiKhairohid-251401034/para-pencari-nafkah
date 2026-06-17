@@ -3,7 +3,9 @@
 #include <QGraphicsDropShadowEffect>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QImage>
 #include <QLabel>
+#include <QPainter>
 #include <QPushButton>
 #include <QStringList>
 #include <QStyle>
@@ -12,6 +14,8 @@
 #include <QWidget>
 #include "theme.h"
 #include "receiptdialog.h"
+#include "strukhttpserver.h"
+#include "qrcodegen.h"
 
 PaymentPage::PaymentPage(OrderManager *mgr, QWidget *parent)
     : QWidget(parent)
@@ -26,6 +30,7 @@ PaymentPage::PaymentPage(OrderManager *mgr, QWidget *parent)
     , m_completeBtn(nullptr)
     , m_thankYouLabel(nullptr)
 {
+    m_strukServer = new StrukHttpServer(this); // mati otomatis saat PaymentPage dihancurkan
     setupUi();
     setupStyle();
 }
@@ -34,6 +39,9 @@ void PaymentPage::refreshPage()
 {
     m_cashString.clear();
     updateCashDisplay();
+
+    if (m_strukServer)
+        m_strukServer->stop(); // matikan sesi struk pesanan sebelumnya
 
     m_activeMethod = "Tunai";
     m_numpadWidget->setVisible(true);
@@ -143,6 +151,9 @@ void PaymentPage::setupUi()
             m_qrisImageLabel->setVisible(method == "QRIS");
             m_sumCashRow->setVisible(method == "Tunai");
             m_sumChangeRow->setVisible(method == "Tunai");
+            if (method == "QRIS") {
+                updateQrisCodeImage();
+            }
         });
     }
     tabsLay->addStretch();
@@ -153,18 +164,51 @@ void PaymentPage::setupUi()
     numpadInnerLay->setContentsMargins(0, 0, 0, 0);
     numpadInnerLay->setSpacing(12);
 
-    // Widget gambar QRIS
-    m_qrisImageLabel = new QLabel();
-    QPixmap qrisPixmap(":/images/qr_brewnbites.png");
-    if (qrisPixmap.isNull()) {
-        m_qrisImageLabel->setText("❌ Gambar tidak ditemukan");
-        m_qrisImageLabel->setStyleSheet("color: red; font-size: 14px;");
-    } else {
-        m_qrisImageLabel->setPixmap(
-            qrisPixmap.scaled(280, 280, Qt::KeepAspectRatio, Qt::SmoothTransformation)
-            );
-    }
-    m_qrisImageLabel->setAlignment(Qt::AlignCenter);
+    // ── Widget QRIS: gambar QR (struk pembayaran dilihat di HP via scan) ──
+    m_qrisImageLabel = new QWidget(); // container utama (nama dipertahankan)
+    QHBoxLayout *qrisRowLay = new QHBoxLayout(m_qrisImageLabel);
+    qrisRowLay->setContentsMargins(0, 0, 0, 0);
+    qrisRowLay->setSpacing(24);
+
+    // -- Kolom kiri: gambar QR --
+    QVBoxLayout *qrCol = new QVBoxLayout();
+    qrCol->setSpacing(10);
+
+    QLabel *qrTitle = new QLabel("Scan untuk Lihat Struk");
+    qrTitle->setObjectName("qrisColTitle");
+    qrTitle->setAlignment(Qt::AlignCenter);
+
+    // Gambar QR diisi secara dinamis oleh updateQrisCodeImage() — lihat di sana.
+    // QR berisi URL ke StrukHttpServer lokal; saat dipindai, HP pelanggan
+    // akan membuka halaman struk pembayaran (bukan gambar statis lagi).
+    m_qrImageLbl = new QLabel();
+    m_qrImageLbl->setAlignment(Qt::AlignCenter);
+    m_qrImageLbl->setObjectName("qrisImageBox");
+
+    QLabel *qrHint = new QLabel("Pindai kode QR ini dengan kamera HP,\nstruk pembayaran akan tampil di layar HP Anda.");
+    qrHint->setObjectName("qrisHint");
+    qrHint->setAlignment(Qt::AlignCenter);
+    qrHint->setWordWrap(true);
+
+    // Alamat URL ditampilkan juga sebagai teks — jaga-jaga jika kamera HP
+    // tidak bisa memindai (mis. kualitas kamera rendah), kasir bisa
+    // membacakannya atau pelanggan mengetik manual di browser HP.
+    m_qrUrlHintLbl = new QLabel();
+    m_qrUrlHintLbl->setObjectName("qrisUrlHint");
+    m_qrUrlHintLbl->setAlignment(Qt::AlignCenter);
+    m_qrUrlHintLbl->setWordWrap(true);
+    m_qrUrlHintLbl->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    qrCol->addWidget(qrTitle);
+    qrCol->addWidget(m_qrImageLbl, 0, Qt::AlignCenter);
+    qrCol->addWidget(qrHint);
+    qrCol->addWidget(m_qrUrlHintLbl);
+    qrCol->addStretch();
+
+    qrisRowLay->addStretch();
+    qrisRowLay->addLayout(qrCol, 0);
+    qrisRowLay->addStretch();
+
     m_qrisImageLabel->hide();
 
     // Cash label
@@ -415,6 +459,76 @@ void PaymentPage::updateChange()
     }
 }
 
+// -----------------------------------------------------------------------------
+//  updateQrisCodeImage — nyalakan StrukHttpServer dengan snapshot pesanan
+//  saat ini, lalu render URL-nya menjadi QR code dan tampilkan di m_qrImageLbl.
+//  Hasilnya: saat QR dipindai dari HP pelanggan (harus 1 WiFi/LAN dengan PC
+//  kasir), browser HP akan membuka halaman HTML struk pembayaran.
+// -----------------------------------------------------------------------------
+void PaymentPage::updateQrisCodeImage()
+{
+    if (!m_strukServer || !m_qrImageLbl)
+        return;
+
+    // cashPaid diabaikan untuk QRIS (lihat StrukHttpServer::start)
+    bool ok = m_strukServer->start(m_mgr, "QRIS", 0);
+
+    if (ok) {
+        QPixmap qr = renderQrPixmap(m_strukServer->serverUrl());
+        m_qrImageLbl->setPixmap(
+            qr.scaled(220, 220, Qt::KeepAspectRatio, Qt::FastTransformation));
+        if (m_qrUrlHintLbl)
+            m_qrUrlHintLbl->setText(m_strukServer->serverUrl());
+    } else {
+        // Server gagal start (mis. PC belum terhubung ke WiFi/LAN apa pun) —
+        // tampilkan gambar QRIS statis sebagai cadangan agar tab tidak kosong.
+        QPixmap fallback(":/images/qr_brewnbites.png");
+        if (fallback.isNull()) {
+            m_qrImageLbl->setText("❌ Server struk gagal dimulai");
+            m_qrImageLbl->setStyleSheet("color: red; font-size: 13px;");
+        } else {
+            m_qrImageLbl->setPixmap(
+                fallback.scaled(220, 220, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        }
+        if (m_qrUrlHintLbl)
+            m_qrUrlHintLbl->setText(
+                "Tidak bisa membuat struk digital: PC kasir belum terhubung ke WiFi/LAN.");
+    }
+}
+
+// -----------------------------------------------------------------------------
+//  renderQrPixmap — ubah matriks modul dari qrcodegen::QrCode menjadi QPixmap
+//  hitam-putih siap tampil, lengkap dengan quiet zone (border putih) di tepi
+//  agar mudah dipindai kamera HP.
+// -----------------------------------------------------------------------------
+QPixmap PaymentPage::renderQrPixmap(const QString &text, int moduleSize, int border)
+{
+    using qrcodegen::QrCode;
+
+    QrCode qr = QrCode::encodeText(text.toStdString(), QrCode::Ecc::MEDIUM);
+    const int n        = qr.size();
+    const int imgSize  = (n + border * 2) * moduleSize;
+
+    QImage img(imgSize, imgSize, QImage::Format_RGB32);
+    img.fill(Qt::white);
+
+    QPainter p(&img);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::black);
+    for (int y = 0; y < n; y++) {
+        for (int x = 0; x < n; x++) {
+            if (qr.getModule(x, y)) {
+                p.drawRect((x + border) * moduleSize,
+                           (y + border) * moduleSize,
+                           moduleSize, moduleSize);
+            }
+        }
+    }
+    p.end();
+
+    return QPixmap::fromImage(img);
+}
+
 void PaymentPage::onNumpadPressed(const QString &val)
 {
     if (val == "⌫") {
@@ -442,7 +556,12 @@ void PaymentPage::onCompleteTransaction()
     }
 
     if (m_activeMethod == "Tunai") {
-        ReceiptDialog *receipt = new ReceiptDialog(m_mgr, cash, this);
+        ReceiptDialog *receipt = new ReceiptDialog(m_mgr, cash, "Tunai", this);
+        receipt->exec();
+        receipt->deleteLater();
+    } else if (m_activeMethod == "QRIS") {
+        // Struk QRIS — cashPaid tidak relevan (pembayaran non-tunai)
+        ReceiptDialog *receipt = new ReceiptDialog(m_mgr, 0, "QRIS", this);
         receipt->exec();
         receipt->deleteLater();
     }
@@ -463,6 +582,8 @@ void PaymentPage::onCompleteTransaction()
     t->setSingleShot(true);
     connect(t, &QTimer::timeout, [this, t]() {
         t->deleteLater();
+        if (m_strukServer)
+            m_strukServer->stop(); // sesi struk untuk pesanan ini selesai
         m_mgr->clearCart();
         emit transactionComplete();
     });
@@ -620,6 +741,31 @@ void PaymentPage::setupStyle()
         }
         #completeBtn:hover { background-color: %16; }
         #completeBtn:disabled { background-color: %17; }
+
+        /* ── QRIS: kolom QR + struk ── */
+        #qrisColTitle {
+            font-family: '%14';
+            font-size: 13px;
+            font-weight: bold;
+            color: %9;
+        }
+        #qrisImageBox {
+            background: white;
+            border: 1px solid %3;
+            border-radius: 12px;
+            padding: 12px;
+        }
+        #qrisHint {
+            font-family: '%6';
+            font-size: 11px;
+            color: %5;
+        }
+        #qrisUrlHint {
+            font-family: '%18';
+            font-size: 10px;
+            font-style: italic;
+            color: %19;
+        }
     )")
                       .arg(Theme::BG_APP)          // %1
                       .arg(Theme::BG_SIDEBAR)      // %2
@@ -638,5 +784,7 @@ void PaymentPage::setupStyle()
                       .arg(Theme::BUTTON_RADIUS)   // %15
                       .arg(Theme::ACCENT_HOVER)    // %16
                       .arg(Theme::TEXT_MUTED)      // %17
+                      .arg(Theme::FONT_MONO)       // %18 — font angka struk QRIS
+                      .arg(Theme::TEXT_MUTED)      // %19 — teks footer "menunggu..."
                   );
 }

@@ -10,7 +10,10 @@ static QString fmtRp(long long val) {
     return "Rp " + p;
 }
 
-ReceiptDialog::ReceiptDialog(OrderManager *mgr, long long cashPaid, QWidget *parent)
+ReceiptDialog::ReceiptDialog(OrderManager *mgr,
+                             long long cashPaid,
+                             const QString &paymentMethod,
+                             QWidget *parent)
     : QDialog(parent)
 {
     setWindowTitle("Struk Pembayaran");
@@ -54,6 +57,8 @@ ReceiptDialog::ReceiptDialog(OrderManager *mgr, long long cashPaid, QWidget *par
         lay->addLayout(rowLay);
     };
 
+    bool isTunai = (paymentMethod == "Tunai");
+
     // Header
     addLabel("BREW N BITES", true);
     addLabel(QDateTime::currentDateTime().toString("dd/MM/yyyy   hh:mm"));
@@ -62,7 +67,7 @@ ReceiptDialog::ReceiptDialog(OrderManager *mgr, long long cashPaid, QWidget *par
     // Info pelanggan
     QLabel *l1 = new QLabel(QString("Pelanggan : %1").arg(mgr->customerName()));
     QLabel *l2 = new QLabel(QString("Meja      : %1").arg(mgr->tableNumber()));
-    QLabel *l3 = new QLabel("Metode    : Tunai");
+    QLabel *l3 = new QLabel(QString("Metode    : %1").arg(paymentMethod)); // metode dinamis
     QFont mono("Courier New", 9);
     l1->setFont(mono); l2->setFont(mono); l3->setFont(mono);
     lay->addWidget(l1);
@@ -75,7 +80,7 @@ ReceiptDialog::ReceiptDialog(OrderManager *mgr, long long cashPaid, QWidget *par
         QHBoxLayout *rowLay = new QHBoxLayout();
         QLabel *nameLabel = new QLabel(
             QString("%1 x%2").arg(line.item.name).arg(line.quantity)
-        );
+            );
         QLabel *priceLabel = new QLabel(fmtRp(line.subtotal()));
         priceLabel->setAlignment(Qt::AlignRight);
         rowLay->addWidget(nameLabel);
@@ -91,11 +96,13 @@ ReceiptDialog::ReceiptDialog(OrderManager *mgr, long long cashPaid, QWidget *par
     addRow("TOTAL",     mgr->formattedTotal(), true);
     addSep();
 
-    // Info cash
-    long long change = cashPaid - static_cast<long long>(mgr->total());
-    addRow("Bayar",     fmtRp(cashPaid));
-    addRow("Kembalian", fmtRp(change), true);
-    addSep();
+    // Info pembayaran — baris Bayar/Kembalian hanya relevan untuk Tunai
+    if (isTunai) {
+        long long change = cashPaid - static_cast<long long>(mgr->total());
+        addRow("Bayar",     fmtRp(cashPaid));
+        addRow("Kembalian", fmtRp(change), true);
+        addSep();
+    }
 
     addLabel("Terima kasih atas kunjungan Anda!");
     addLabel("Selamat menikmati!");

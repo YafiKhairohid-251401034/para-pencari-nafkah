@@ -1,5 +1,8 @@
 #pragma once
+#include <QDate>
+#include <QDateEdit>
 #include <QFrame>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QListWidget>
 #include <QPushButton>
@@ -11,6 +14,7 @@
 
 // =============================================================================
 //  HistoryPage — Daftar riwayat transaksi + panel detail (mirip struk)
+//  + Filter penjualan per tanggal
 // =============================================================================
 
 class HistoryPage : public QWidget
@@ -30,17 +34,24 @@ signals:
 
 private slots:
     void onTransactionSelected(int row);
+    void onFilterDateChanged(const QDate &date);
+    void onShowToday();
+    void onShowAll();
 
 private:
     void setupUi();
     void setupStyle();
     void buildSidebar();
+    QHBoxLayout *buildFilterBar();
     void populateList();
+    void applyDateFilter();
     void showDetail(const TransactionRecord &rec);
     void clearDetail();
+    void updateSummaryBar();
 
     HistoryManager *m_historyMgr;
-    QVector<TransactionRecord> m_records;
+    QVector<TransactionRecord> m_allRecords;     // seluruh riwayat (belum difilter)
+    QVector<TransactionRecord> m_records;        // hasil setelah filter tanggal aktif
 
     // Sidebar
     QFrame *m_sidebar;
@@ -48,6 +59,15 @@ private:
     QPushButton *m_navOrder;
     QPushButton *m_navPayment;
     QPushButton *m_navHistory;
+
+    // Filter bar
+    QDateEdit   *m_dateFilterEdit;
+    QPushButton *m_btnToday;
+    QPushButton *m_btnAllDates;
+    bool         m_filterActive = false; // true jika filter tanggal spesifik aktif
+
+    // Ringkasan hasil filter
+    QLabel *m_summaryLabel;
 
     // List
     QListWidget *m_listWidget;
